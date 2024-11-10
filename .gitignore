@@ -1,0 +1,37 @@
+# Laravel
+# node_modules dan vendor dihapus dari .gitignore, ini TIDAK disarankan
+# /node_modules
+# /vendor
+
+/public/hot
+/public/storage
+/storage/*.key
+/.env
+.env.*
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+.pnpm-debug.log
+.vagrant
+.phpunit.result.cache
+.phpunit.cache
+
+# IDE/Editor-specific files
+/.vscode
+/.idea
+/.fleet
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Laravel-specific files
+/storage/app/public
+/public/build
+.env.backup
+.env.production
+.phpactor.json
+auth.json
+/.gitlab-ci.yml
+/.travis.yml
