@@ -44,78 +44,9 @@ class invoice extends Model
                 // Log::error($e->getMessage());
             }
         });
-
-
-        // self::created(function ($sewa) {
-        //     $bus = $sewa->bus; // Ambil bus terkait dari sewa
-
-        //     // Menghitung durasi sewa dalam hari
-        //     $durasi = Carbon::parse($sewa->tanggal_selesai)->diffInDays(Carbon::parse($sewa->tanggal_mulai));
-
-        //     // Hitung jumlah berdasarkan durasi sewa
-        //     $totalAmount = $bus->harga_sewa * $durasi;
-
-        //     Invoice::create([
-        //         'sewa_id' => $sewa->id,
-        //         'jumlah' => $totalAmount,
-        //         'tanggal_terbit' => now(),
-        //         'status' => 'Belum Dibayar',
-        //     ]);
-        // });
-
-        // self::created(function ($invoice) {
-        //     $sewa = $invoice->sewa;
-        //     if ($sewa && $sewa->bus) {
-        //         $totalAmount = $sewa->bus->harga_sewa * $sewa->durasi;
-        //         $invoice->jumlah = $totalAmount;
-        //         $invoice->save();
-        //     }
-        // });
     }
 
-    // Di model Invoice.php
-    // protected static function booted()
-    // {
-    //     static::creating(function ($invoice) {
-    //         // Set tanggal_terbit ke waktu saat ini jika tidak ada nilai yang diberikan
-    //         if (!$invoice->tanggal_terbit) {
-    //             $invoice->tanggal_terbit = now();
-    //         }
-    //     });
-    // }
 
-
-    // public static function booted()
-    // {
-    //     parent::boot();
-
-    //     self::created(function ($invoice) {
-    //         $sewa = $invoice->sewa;
-    //         $invoice->jumlah = $sewa->calculateTotalPrice();
-    //         $invoice->save();
-    //     });
-    // }
-
-    // public static function booted()
-    // {
-    //     parent::boot();
-
-    //     self::creating(function ($invoice) {
-    //         $sewa = $invoice->sewa; // Mengambil data sewa terkait
-
-    //         if ($sewa && $sewa->total_harga) {
-    //             // Set jumlah berdasarkan total_harga dari sewa
-    //             $invoice->jumlah = $sewa->total_harga;
-    //         } else {
-    //             throw new \Exception("Jumlah tidak boleh kosong dan harus diisi dari total_harga Sewa.");
-    //         }
-
-    //         // Set tanggal_terbit ke waktu saat ini jika tidak ada nilai yang diberikan
-    //         if (!$invoice->tanggal_terbit) {
-    //             $invoice->tanggal_terbit = now();
-    //         }
-    //     });
-    // }
 
 
     public static function booted()
@@ -160,5 +91,6 @@ class invoice extends Model
     public function bus()
     {
         return $this->belongsTo(Bus::class);
+
     }
 }

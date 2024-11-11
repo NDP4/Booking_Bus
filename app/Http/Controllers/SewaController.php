@@ -6,9 +6,9 @@ use App\Models\Sewa;
 use Midtrans\Snap;
 use Midtrans\Config;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Log;
 use Midtrans\Transaction;
+use App\Http\Controllers\InvoiceController;
 
 class SewaController extends Controller
 {
@@ -52,16 +52,13 @@ class SewaController extends Controller
         ];
 
         try {
-
             $snapToken = Snap::getSnapToken($payment_data);
             Log::info('Midtrans Snap Token: ' . $snapToken);
 
-
             return view('payment', compact('snapToken', 'sewa'));
         } catch (\Exception $e) {
-            // $snapToken = Snap::getSnapToken($payment_data);
             Log::error('Error generating snap token: ' . $e->getMessage());
-            return redirect()->route('sewa.lanjutan')->with('error', 'Terjadi kesalahan saat memproses pembayaran.');
+            return redirect()->route('filament.resources.sewas.index')->with('error', 'Terjadi kesalahan saat memproses pembayaran.');
         }
     }
 
@@ -70,11 +67,10 @@ class SewaController extends Controller
         // Ambil data sewa berdasarkan ID
         $sewa = Sewa::findOrFail($id);
 
-
         $order_id = 'SEWA-' . $sewa->id;
 
         try {
-
+            // Cek status transaksi melalui API Midtrans
             $status = Transaction::status($order_id);
 
             if (is_array($status)) {
@@ -85,28 +81,80 @@ class SewaController extends Controller
                 throw new \Exception("Unexpected response format");
             }
 
+            // Menangani status transaksi
             if ($transaction_status == 'settlement') {
-
-                return redirect()->route('sewa.show', ['id' => $sewa->id])
+                // Pembayaran sudah selesai
+                return redirect()->route('filament.resources.sewas.edit', ['record' => $sewa->id])
                     ->with('message', 'Pembayaran Anda sudah selesai.');
             } elseif ($transaction_status == 'pending') {
-
+                // Pembayaran tertunda
                 return view('payment_lanjutan', compact('sewa', 'status'));
             } else {
-                return redirect()->route('sewa.index')
+                // Pembayaran gagal atau dibatalkan
+                return redirect()->route('filament.resources.sewas.index')
                     ->with('error', 'Pembayaran Anda gagal atau dibatalkan.');
             }
         } catch (\Exception $e) {
             Log::error('Error checking payment status: ' . $e->getMessage());
-            return redirect()->route('sewa.index')
+            return redirect()->route('filament.resources.sewas.index')
                 ->with('error', 'Terjadi kesalahan saat memeriksa status pembayaran.');
         }
     }
 
+    /**
+     * Callback untuk menangani hasil pembayaran dari Midtrans
+     */
+    public function paymentCallback(Request $request, $id)
+    {
+        // Ambil data Sewa berdasarkan ID
+        $sewa = Sewa::findOrFail($id);
+        $order_id = 'SEWA-' . $sewa->id;
+
+        try {
+            // Cek status transaksi melalui API Midtrans
+            $status = Transaction::status($order_id);
+
+            if (is_array($status)) {
+                $transaction_status = $status['transaction_status'] ?? '';
+            } elseif (is_object($status)) {
+                $transaction_status = $status->transaction_status ?? '';
+            } else {
+                throw new \Exception("Unexpected response format");
+            }
+
+            // Tangani status pembayaran
+            if ($transaction_status == 'settlement') {
+                // Pembayaran berhasil
+                $sewa->status = 'Dibayar';
+                $sewa->save();
+
+                // Update status Invoice
+                $invoiceController = new InvoiceController();
+                $invoiceController->updateStatus($sewa->id, 'Dibayar');
+
+                return redirect()->route('filament.resources.sewas.index')
+                    ->with('success', 'Pembayaran berhasil, status sewa dan invoice telah diperbarui.');
+            } elseif ($transaction_status == 'pending') {
+                return redirect()->route('filament.resources.sewas.index')
+                    ->with('message', 'Pembayaran Anda tertunda, harap tunggu konfirmasi.');
+            } else {
+                return redirect()->route('filament.resources.sewas.index')
+                    ->with('error', 'Pembayaran Anda gagal atau dibatalkan.');
+            }
+        } catch (\Exception $e) {
+            Log::error('Error processing payment callback: ' . $e->getMessage());
+            return redirect()->route('filament.resources.sewas.index')
+                ->with('error', 'Terjadi kesalahan saat memproses callback pembayaran.');
+        }
+    }
 
     public function paymentSuccess($id)
     {
+        // Ambil data sewa berdasarkan ID
         $sewa = Sewa::findOrFail($id);
-        return view('payment_sukses', compact('sewa'));
+
+        // Pembayaran sukses, redirect ke halaman list sewa di Filament
+        return redirect()->route('filament.resources.sewas.index')
+            ->with('success', 'Pembayaran berhasil, status sewa telah diperbarui.');
     }
 }

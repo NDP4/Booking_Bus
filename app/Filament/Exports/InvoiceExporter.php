@@ -3,6 +3,8 @@
 namespace App\Filament\Exports;
 
 use App\Models\Invoice;
+use Barryvdh\DomPDF\Facade\Pdf;
+
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;
@@ -11,6 +13,18 @@ use Illuminate\Support\Facades\Log;
 class InvoiceExporter extends Exporter
 {
     protected static ?string $model = Invoice::class;
+
+    public function export(): mixed
+    {
+        // Ambil data invoice yang akan diekspor
+        $invoice = Invoice::find($this->record->id);  // Atau jika bulk, ambil data dari $this->records
+
+        // Buat view untuk PDF
+        $pdf = PDF::loadView('invoices.pdf', compact('invoice'));  // Buat view yang sesuai
+
+        // Menghasilkan file PDF
+        return $pdf->download('invoice-' . $invoice->id . '.pdf');
+    }
 
     public static function getColumns(): array
     {

@@ -35,29 +35,24 @@ class Sewa extends Model
         return $this->belongsTo(Bus::class, 'id_bus');
     }
 
-    // Fungsi untuk memeriksa apakah bus sudah dipesan dalam rentang waktu tertentu
     public static function isBusAvailable($busId, $startDate, $endDate, $excludeId = null)
     {
-        // Konversi startDate dan endDate menjadi objek Carbon untuk perbandingan yang lebih baik
         $startDate = Carbon::parse($startDate);
         $endDate = Carbon::parse($endDate);
 
         return self::where('id_bus', $busId)
             ->where(function ($query) use ($startDate, $endDate) {
-                // Cek jika ada tumpang tindih dengan sewa lain
                 $query->whereBetween('tanggal_mulai', [$startDate, $endDate])
                     ->orWhereBetween('tanggal_selesai', [$startDate, $endDate])
                     ->orWhere(function ($query) use ($startDate, $endDate) {
-                        // Cek apakah sewa lain terjadi sepanjang periode baru
                         $query->where('tanggal_mulai', '<=', $startDate)
                             ->where('tanggal_selesai', '>=', $endDate);
                     });
             })
-            ->where('id', '!=', $excludeId) // Mengecualikan pengecekan untuk update
+            ->where('id', '!=', $excludeId)
             ->exists();
     }
 
-    // Validasi untuk memastikan bus tersedia
     public static function validateBusAvailability($busId, $startDate, $endDate, $excludeId = null)
     {
         if (self::isBusAvailable($busId, $startDate, $endDate, $excludeId)) {
@@ -75,7 +70,38 @@ class Sewa extends Model
     {
         parent::boot();
 
-        // Menambahkan validasi sebelum membuat atau memperbarui sewa
+        // untuk validasi tanggal tidak boleh kurang dari hari ini
+        self::creating(function ($sewa) {
+            if (Carbon::parse($sewa->tanggal_mulai)->isBefore(Carbon::today())) {
+                throw new \Exception("Tanggal mulai tidak boleh lebih kecil dari hari ini.");
+            }
+            if (Carbon::parse($sewa->tanggal_selesai)->isBefore(Carbon::parse($sewa->tanggal_mulai))) {
+                throw new \Exception("Tanggal selesai tidak boleh lebih kecil dari tanggal mulai.");
+            }
+            self::validateBusAvailability(
+                $sewa->id_bus,
+                $sewa->tanggal_mulai,
+                $sewa->tanggal_selesai
+            );
+        });
+
+        self::updating(function ($sewa) {
+            if (Carbon::parse($sewa->tanggal_mulai)->isBefore(Carbon::today())) {
+                throw new \Exception("Tanggal mulai tidak boleh lebih kecil dari hari ini.");
+            }
+            if (Carbon::parse($sewa->tanggal_selesai)->isBefore(Carbon::parse($sewa->tanggal_mulai))) {
+                throw new \Exception("Tanggal selesai tidak boleh lebih kecil dari tanggal mulai.");
+            }
+
+            self::validateBusAvailability(
+                $sewa->id_bus,
+                $sewa->tanggal_mulai,
+                $sewa->tanggal_selesai,
+                $sewa->id
+            );
+        });
+
+        // Validasi ketersediaan bus
         self::creating(function ($sewa) {
             self::validateBusAvailability(
                 $sewa->id_bus,
@@ -85,7 +111,6 @@ class Sewa extends Model
         });
 
         self::updating(function ($sewa) {
-            // Validasi saat update sewa (jika ID bus atau periode waktu berubah)
             self::validateBusAvailability(
                 $sewa->id_bus,
                 $sewa->tanggal_mulai,
@@ -112,7 +137,6 @@ class Sewa extends Model
 
     public function getTotalHargaAttribute()
     {
-        // Menghitung total harga berdasarkan lama sewa
         return $this->lama_sewa * $this->bus->harga_sewa;
     }
 
@@ -122,7 +146,6 @@ class Sewa extends Model
         $start = Carbon::parse($this->tanggal_mulai);
         $end = Carbon::parse($this->tanggal_selesai);
 
-        // Menghitung durasi dengan cara yang sama
         return $start->isSameDay($end) ? 1 : $start->diffInDays($end) + 1;
     }
 

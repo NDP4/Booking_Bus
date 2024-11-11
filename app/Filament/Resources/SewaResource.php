@@ -75,29 +75,26 @@ class SewaResource extends Resource
 
                         $startDate = $get('tanggal_mulai');
                         $endDate = $get('tanggal_selesai');
-                        // Validasi tumpang tindih sewa bus
                         if ($startDate && $endDate) {
                             try {
                                 Sewa::validateBusAvailability($state, $startDate, $endDate);
                             } catch (\Exception $e) {
-                                // Mengirimkan notifikasi kepada pengguna terkait
-                                $user = Auth::user();  // Mendapatkan pengguna yang sedang login
+                                $user = Auth::user();
                                 Notification::make()
-                                    ->error()  // Error karena tumpang tindih
+                                    ->error()
                                     ->title('Peringatan: Bus Tidak Tersedia')
                                     ->body('Bus sudah dipesan pada periode waktu yang sama.')
                                     ->actions([
-                                        Action::make('Tandai Sudah Dibaca')  // Menjadikan aksi ini sebagai tombol
-                                            ->markAsRead() // Tandai notifikasi sebagai sudah dibaca
+                                        Action::make('Tandai Sudah Dibaca')
+                                            ->markAsRead()
                                     ])
-                                    ->toDatabase() // Simpan notifikasi ke database
-                                    ->sendToDatabase(User::whereIn('role', ['admin', 'konsumen'])->get()); // Mengirim notifikasi ke admin dan konsumen
+                                    ->toDatabase()
+                                    ->sendToDatabase(User::whereIn('role', ['admin', 'konsumen'])->get());
 
-                                // Clear input jika terjadi tumpang tindih
                                 $set('id_bus', null);
                                 $set('total_harga', null);
 
-                                throw new \Exception($e->getMessage()); // Menampilkan pesan error
+                                throw new \Exception($e->getMessage());
                             }
                         }
                     }),
@@ -124,7 +121,8 @@ class SewaResource extends Resource
                                 throw new \Exception($e->getMessage());
                             }
                         }
-                    }),
+                    })
+                    ->rule('after_or_equal:today'),
 
                 DatePicker::make('tanggal_selesai')
                     ->label('Tanggal Selesai')
@@ -137,7 +135,8 @@ class SewaResource extends Resource
                             $set('total_harga', static::calculateTotalPrice($busId, $tanggalMulai, $state));
                         }
                     })
-                    ->rule('after_or_equal:tanggal_mulai'),
+                    ->rule('after_or_equal:tanggal_mulai')
+                    ->rule('after_or_equal:today'),
 
                 TimePicker::make('jam_penjemputan')
                     ->label('Jam Penjemputan')
@@ -165,7 +164,7 @@ class SewaResource extends Resource
 
                 TextInput::make('total_harga')
                     ->label('Total Harga')
-                    ->required() // Pastikan field ini wajib diisi
+                    ->required()
                     ->numeric(),
 
             ]);
@@ -182,7 +181,7 @@ class SewaResource extends Resource
         $start = Carbon::parse($startDate);
         $end = Carbon::parse($endDate);
 
-        // Menghitung durasi hari dengan logika yang diinginkan
+        // Menghitung durasi hari
         $durasi = $start->isSameDay($end) ? 1 : $start->diffInDays($end) + 1;
 
         return $bus->harga_sewa * $durasi;

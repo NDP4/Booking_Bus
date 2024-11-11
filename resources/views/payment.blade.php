@@ -6,6 +6,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pembayaran Sewa Bus</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
 
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <script src="https://app.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
@@ -59,6 +61,29 @@
             window.snap.pay(snapToken, {
                 onSuccess: function (result) {
                     console.log("Payment success:", result);
+                    // Kirim data menggunakan metode POST ke endpoint payment-callback
+                    var form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/sewa/{{ $sewa->id }}/payment-callback';  // URL tujuan
+
+                    // Tambahkan CSRF token
+                    var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    var csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = '_token';
+                    csrfInput.value = csrfToken;
+                    form.appendChild(csrfInput);
+
+                    // Tambahkan parameter untuk status transaksi
+                    var statusInput = document.createElement('input');
+                    statusInput.type = 'hidden';
+                    statusInput.name = 'transaction_status';
+                    statusInput.value = 'settlement'; // status pembayaran
+                    form.appendChild(statusInput);
+
+                    // Kirim form
+                    document.body.appendChild(form);
+                    form.submit();
                 },
                 onPending: function (result) {
                     console.log("Payment pending:", result);
@@ -68,6 +93,7 @@
                 }
             });
         };
+
     </script>
 
 </body>

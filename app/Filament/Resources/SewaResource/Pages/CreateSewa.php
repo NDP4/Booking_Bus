@@ -39,22 +39,21 @@ class CreateSewa extends CreateRecord
     {
         $user = Auth::user();
 
-        // Kirim notifikasi kepada user yang sedang login
         Notification::make()
             ->success()
             ->title('Penyewaan Anda Telah Dibuat')
             ->body('Data penyewaan Anda telah berhasil dibuat.')
             ->sendToDatabase($user)
-            ->actions([
-                Action::make('Tandai sudah dibaca')
-                    // ->button()
-                    ->markAsRead(),
-                Action::make('Tandai belum dibaca')
-                    // ->button()
-                    ->markAsUnread(),
-            ]);
+            // ->actions([
+            //     Action::make('Tandai sudah dibaca')
+            //         // ->button()
+            //         ->markAsRead(),
+            //     Action::make('Tandai belum dibaca')
+            //         // ->button()
+            //         ->markAsUnread(),
+            // ])
+        ;
 
-        // Kirim notifikasi kepada semua admin
         $admins = User::where('role', 'admin')->get();
         foreach ($admins as $admin) {
             Notification::make()
