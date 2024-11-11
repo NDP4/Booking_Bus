@@ -11,11 +11,16 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ExportBulkAction;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Exports\DokumentasiKerusakanExporter;
+use Filament\Forms\Components\MarkdownEditor;
+use Filament\Forms\Components\Select;
+use Filament\Tables\Enums\ActionsPosition;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class DokumentasiKerusakanResource extends Resource
@@ -23,6 +28,7 @@ class DokumentasiKerusakanResource extends Resource
     protected static ?string $model = dokumentasi_kerusakan::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-camera';
+    protected static ?string $activeNavigationIcon = 'heroicon-s-camera';
 
     protected static ?string $navigationLabel = 'Dokumentasi Kerusakan';
     public static function getLabel(): ?string
@@ -36,7 +42,7 @@ class DokumentasiKerusakanResource extends Resource
         return $form
             ->schema([
                 //
-                Forms\Components\Select::make('maintenance_id')
+                Select::make('maintenance_id')
                     ->relationship('maintenance', 'id')
                     ->label('Maintenance')
                     ->required(),
@@ -45,10 +51,11 @@ class DokumentasiKerusakanResource extends Resource
                     ->image()
                     ->directory('uploads/dokumentasi_kerusakan')
                     ->required(),
-                Forms\Components\Textarea::make('deskripsi')
+                MarkdownEditor::make('deskripsi')
                     ->label('Deskripsi')
                     ->required(),
-            ]);
+            ])
+            ->columns(1);
     }
 
     public static function table(Table $table): Table
@@ -65,8 +72,11 @@ class DokumentasiKerusakanResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-            ])
+                ActionGroup::make([
+                    EditAction::make(),
+                ])
+                    ->tooltip('Actions'),
+            ], position: ActionsPosition::BeforeCells)
             ->headerActions([
                 ExportAction::make()->exporter(DokumentasiKerusakanExporter::class)
             ])
@@ -89,8 +99,6 @@ class DokumentasiKerusakanResource extends Resource
     {
         return [
             'index' => Pages\ListDokumentasiKerusakans::route('/'),
-            'create' => Pages\CreateDokumentasiKerusakan::route('/create'),
-            'edit' => Pages\EditDokumentasiKerusakan::route('/{record}/edit'),
         ];
     }
 }
