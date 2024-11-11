@@ -10,6 +10,7 @@ use App\Models\Sewa;
 use App\Models\sewa_crew;
 use App\Models\User;
 use Filament\Forms;
+use Filament\Forms\Components\Split;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -40,7 +41,9 @@ class CrewSewaResource extends Resource
     {
         return $form
             ->schema([
-                //
+                Split::make([
+
+
                 Forms\Components\Select::make('sewa_id')
                     ->relationship('sewa', 'id')
                     ->label('ID Sewa')
@@ -57,7 +60,7 @@ class CrewSewaResource extends Resource
                     ->required()
                     ->options(User::crew()->pluck('name', 'id'))
 
-
+                    ])
             ]);
     }
 
@@ -127,8 +130,6 @@ class CrewSewaResource extends Resource
     {
         return [
             'index' => Pages\ListCrewSewas::route('/'),
-            'create' => Pages\CreateCrewSewa::route('/create'),
-            'edit' => Pages\EditCrewSewa::route('/{record}/edit'),
         ];
     }
 }
