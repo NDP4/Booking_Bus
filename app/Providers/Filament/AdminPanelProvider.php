@@ -51,6 +51,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login(CustomLogin::class)
             ->registration()
+            ->sidebarCollapsibleOnDesktop()
             ->passwordReset()
             ->emailVerification()
             ->colors([

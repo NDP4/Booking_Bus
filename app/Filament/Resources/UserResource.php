@@ -66,7 +66,7 @@ class UserResource extends Resource
                 Forms\Components\TextInput::make('nik')
                     ->label('NIK')
                     ->numeric()
-                    ->maxLength(16)
+                    // ->maxLength(16)
                     ->nullable()
                     ->required()
                     ->unique(ignoreRecord: true),
