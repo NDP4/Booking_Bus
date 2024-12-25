@@ -10,11 +10,14 @@ import { cn } from "../lib/utils"; // Pastikan utils berada di folder yang benar
 // import { Cover } from "../components/ui/cover"; // Sesuaikan path jika perlu
 import { FlipWords } from "../components/ui/flip-words"; // Sesuaikan path jika perlu
 import { Button } from "../components/ui/moving-border";
+import { BackgroundBeamsWithCollision } from "../components/ui/background-beams-with-collision";
+import { HoverBorderGradient } from "../components/ui/hover-border-gradient";
 
 export default function Home() {
     const words = ["Kenyamanan", "Keamanan", "Kepercayaan"];
     return (
         <html>
+            <BackgroundBeamsWithCollision className="absolute z-0 inset-x-0 bottom-1"/>
             <div className="relative flex items-center justify-center w-full text-white dark:bg-gray-900">
                 <Navbar className="top-2" />
                 {/* <p className="text-black dark:text-white">
@@ -27,13 +30,13 @@ export default function Home() {
                 </h1>
             </div> */}
             <div className="h-[40rem] flex justify-center items-center px-4">
-                <div className="mx-auto text-4xl font-normal text-neutral-600 dark:text-neutral-400">
+                <div className="z-10 mx-auto text-4xl font-normal text-neutral-600 dark:text-neutral-400">
                     Untuk
                     <FlipWords words={words} /> <br />
                     Kami hadir untuk anda
                 </div>
             </div>
-            <div className="flex items-center justify-center space-x-4">
+            {/* <div className="flex items-center justify-center space-x-4">
                 <a href="http://localhost:8000/admin">
                     <Button
                         borderRadius="1.75rem"
@@ -50,7 +53,7 @@ export default function Home() {
                         Tanya CS
                     </Button>
                 </a>
-            </div>
+            </div> */}
         </html>
     );
 }
@@ -58,68 +61,43 @@ export default function Home() {
 function Navbar({ className }) {
     const [active, setActive] = useState(null);
     return (
-        <div
-            className={cn(
-                "fixed top-10 inset-x-0 max-w-2xl mx-auto z-50",
-                className
-            )}
-        >
-            <Menu setActive={setActive}>
-                <MenuItem setActive={setActive} active={active} item="Home">
-                    {/* <div className="flex flex-col space-y-4 text-sm">
-                        <HoveredLink href="/web-dev">
-                            Web Development
-                        </HoveredLink>
-                        <HoveredLink href="/interface-design">
-                            Interface Design
-                        </HoveredLink>
-                        <HoveredLink href="/seo">
-                            Search Engine Optimization
-                        </HoveredLink>
-                        <HoveredLink href="/branding">Branding</HoveredLink>
-                    </div> */}
-                </MenuItem>
-                <MenuItem setActive={setActive} active={active} item="Bus">
-                    {/* <div className="grid grid-cols-2 gap-10 p-4 text-sm ">
-                        <ProductItem
-                            title="Algochurn"
-                            href="https://algochurn.com"
-                            src="https://assets.aceternity.com/demos/algochurn.webp"
-                            description="Prepare for tech interviews like never before."
-                        />
-                        <ProductItem
-                            title="Tailwind Master Kit"
-                            href="https://tailwindmasterkit.com"
-                            src="https://assets.aceternity.com/demos/tailwindmasterkit.webp"
-                            description="Production ready Tailwind css components for your next project"
-                        />
-                        <ProductItem
-                            title="Moonbeam"
-                            href="https://gomoonbeam.com"
-                            src="https://assets.aceternity.com/demos/Screenshot+2024-02-21+at+11.51.31%E2%80%AFPM.png"
-                            description="Never write from scratch again. Go from idea to blog in minutes."
-                        />
-                        <ProductItem
-                            title="Rogue"
-                            href="https://userogue.com"
-                            src="https://assets.aceternity.com/demos/Screenshot+2024-02-21+at+11.47.07%E2%80%AFPM.png"
-                            description="Respond to government RFPs, RFIs and RFQs 10x faster using AI"
-                        />
-                    </div> */}
-                </MenuItem>
-                <MenuItem
-                    setActive={setActive}
-                    active={active}
-                    item="Tentang Kami"
-                >
-                    {/* <div className="flex flex-col space-y-4 text-sm">
-                        <HoveredLink href="/hobby">Hobby</HoveredLink>
-                        <HoveredLink href="/individual">Individual</HoveredLink>
-                        <HoveredLink href="/team">Team</HoveredLink>
-                        <HoveredLink href="/enterprise">Enterprise</HoveredLink>
-                    </div> */}
-                </MenuItem>
-            </Menu>
+        <div className={cn("fixed top-10 inset-x-0 w-full mx-auto z-50", className)}>
+            {/* Container utama dengan flex */}
+            <div className="flex items-center justify-between mx-5">
+                {/* Logo di kiri */}
+                <div className="flex items-center justify-start min-w-48">
+                    <img src="images/logo_rizky_putra_168.svg" className="w-12 h-12" alt="Logo" />
+                </div>
+
+                {/* Menu di tengah */}
+                <Menu setActive={setActive} className="flex-grow flex justify-center">
+                    <MenuItem setActive={setActive} active={active} item="Home">
+                        {/* <HoveredLink href="/web-dev">Web Development</HoveredLink> */}
+                    </MenuItem>
+                    <MenuItem setActive={setActive} active={active} item="Bus">
+                        {/* <HoveredLink href="/interface-design">Interface Design</HoveredLink> */}
+                    </MenuItem>
+                    <MenuItem setActive={setActive} active={active} item="Tentang Kami">
+                        {/* <HoveredLink href="/hobby">Hobby</HoveredLink> */}
+                    </MenuItem>
+                </Menu>
+
+                {/* Tombol kanan */}
+                <div className="flex items-center justify-end min-w-48">
+                    <HoverBorderGradient
+                        containerClassName="rounded-full mx-1"
+                        as="button"
+                        className="dark:bg-black bg-white text-black dark:text-white flex items-center space-x-2">
+                        <span>Login</span>
+                    </HoverBorderGradient>
+                    <HoverBorderGradient
+                        containerClassName="rounded-full"
+                        as="button"
+                        className="dark:bg-black bg-white text-black dark:text-white flex items-center space-x-2">
+                        <span>Tanya CS</span>
+                    </HoverBorderGradient>
+                </div>
+            </div>
         </div>
     );
 }
