@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;  // Add this line
 use Midtrans\Config as MidtransConfig;
 use Illuminate\Support\Facades\Hash;  // Add this at the top with other imports
+use Illuminate\Support\Facades\Storage;  // Add this at the top with other imports
 
 // Add Midtrans configuration
 MidtransConfig::$serverKey = env('MIDTRANS_SERVER_KEY');
@@ -465,30 +466,3 @@ Route::middleware(['auth'])->prefix('dashboard')->group(function () {
         ]);
     })->name('dashboard.history');
 });
-
-Route::get('/history', function () {
-    $sewas = Sewa::with(['bus'])
-        ->where('id_penyewa', Auth::id())
-        ->latest()
-        ->get()
-        ->map(function ($sewa) {
-            return [
-                'id' => $sewa->id,
-                'bus_name' => $sewa->bus->nama_bus,
-                'bus_image' => $sewa->bus->foto_bus ? asset('storage/' . $sewa->bus->foto_bus) : null,
-                'start_date' => $sewa->tanggal_mulai,
-                'end_date' => $sewa->tanggal_selesai,
-                'pickup_time' => $sewa->jam_penjemputan,
-                'location' => $sewa->lokasi_penjemputan,
-                'destination' => $sewa->tujuan,
-                'total_price' => $sewa->total_harga,
-                'status' => $sewa->status,
-                'created_at' => $sewa->created_at->format('d M Y H:i'),
-            ];
-        });
-
-    return inertia('History', [
-        'sewas' => $sewas,
-        'auth' => ['user' => Auth::user()]
-    ]);
-})->middleware(['auth'])->name('history');

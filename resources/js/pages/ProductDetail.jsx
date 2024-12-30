@@ -14,7 +14,9 @@ import {
 } from "react-icons/fa";
 import { HoverBorderGradient } from "@/components/ui/hover-border-gradient";
 import { cn } from "@/lib/utils";
+import { toast, Toaster } from "react-hot-toast"; // Add this import if not exists
 
+// Updated Navbar Component
 function Navbar({ className, isAuthenticated, handleLogout }) {
     const [active, setActive] = useState(null);
 
@@ -23,7 +25,7 @@ function Navbar({ className, isAuthenticated, handleLogout }) {
     };
 
     return (
-        <div className={cn("top-10 inset-x-0 w-full mx-auto z-50", className)}>
+        <div className={cn(" top-10 inset-x-0 w-full mx-auto z-50", className)}>
             <div className="flex items-center justify-between mx-5">
                 <div className="flex items-center justify-start min-w-48">
                     <Link href="/">
@@ -60,7 +62,48 @@ function Navbar({ className, isAuthenticated, handleLogout }) {
                 </Menu>
 
                 <div className="flex items-center justify-center space-x-4">
-                    {!isAuthenticated ? (
+                    {isAuthenticated ? (
+                        <>
+                            <div className="relative group">
+                                <button className="flex items-center space-x-1 text-gray-700 hover:text-indigo-600">
+                                    <span>Dashboard</span>
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="w-4 h-4"
+                                        viewBox="0 0 20 20"
+                                        fill="currentColor"
+                                    >
+                                        <path
+                                            fillRule="evenodd"
+                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                            clipRule="evenodd"
+                                        />
+                                    </svg>
+                                </button>
+                                <div className="absolute right-0 invisible w-48 py-2 mt-2 transition-all duration-200 ease-in-out bg-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 group-hover:visible">
+                                    <Link
+                                        href="/dashboard/profile"
+                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600"
+                                    >
+                                        Edit Profile
+                                    </Link>
+                                    <Link
+                                        href="/dashboard/history"
+                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600"
+                                    >
+                                        Riwayat Sewa
+                                    </Link>
+                                </div>
+                            </div>
+                            <HoverBorderGradient
+                                borderRadius="1.75rem"
+                                className="text-black bg-white dark:bg-slate-900 dark:text-white border-neutral-200 dark:border-slate-800"
+                                onClick={handleLogout}
+                            >
+                                Logout
+                            </HoverBorderGradient>
+                        </>
+                    ) : (
                         <a href="/admin">
                             <HoverBorderGradient
                                 containerClassName="rounded-full mx-1"
@@ -70,14 +113,6 @@ function Navbar({ className, isAuthenticated, handleLogout }) {
                                 <span>Login</span>
                             </HoverBorderGradient>
                         </a>
-                    ) : (
-                        <HoverBorderGradient
-                            className="text-black bg-white dark:bg-slate-900 dark:text-white border-neutral-200 dark:border-slate-800"
-                            onClick={handleLogout}
-                            containerClassName="rounded-[1.75rem]"
-                        >
-                            Logout
-                        </HoverBorderGradient>
                     )}
                 </div>
             </div>
@@ -90,6 +125,7 @@ export default function ProductDetail({ bus, auth }) {
 
     return (
         <div className="flex flex-col min-h-screen">
+            <Toaster position="top-right" />
             <Navbar
                 className="top-0"
                 isAuthenticated={auth?.user}
@@ -156,28 +192,103 @@ export default function ProductDetail({ bus, auth }) {
                             {auth?.user ? (
                                 <Link
                                     href={`/product/${bus.id}/sewa`} // Changed from /admin/sewas/create
-                                    className="inline-block px-8 py-3 text-lg font-semibold text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700"
+                                    onClick={(e) => {
+                                        // Check if bus is already booked
+                                        if (bus.is_booked) {
+                                            e.preventDefault();
+                                            toast.error(
+                                                "Bus ini sudah dibooking untuk periode yang dipilih"
+                                            );
+                                            return;
+                                        }
+
+                                        // Check if bus is under maintenance or not available
+                                        if (bus.status === "maintenance") {
+                                            e.preventDefault();
+                                            toast.error(
+                                                "Bus sedang dalam perawatan"
+                                            );
+                                            return;
+                                        }
+
+                                        // You can add more validation checks here
+                                    }}
+                                    className={`inline-block px-8 py-3 text-lg font-semibold text-white transition-colors rounded-lg ${
+                                        bus.is_booked
+                                            ? "bg-gray-400 cursor-not-allowed"
+                                            : "bg-blue-600 hover:bg-blue-700"
+                                    }`}
                                 >
-                                    Sewa Sekarang
+                                    {bus.is_booked
+                                        ? "Tidak Tersedia"
+                                        : "Sewa Sekarang"}
                                 </Link>
                             ) : (
                                 <Link
                                     href="/admin/login"
                                     className="inline-block px-8 py-3 text-lg font-semibold text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700"
+                                    onClick={() => {
+                                        toast.info(
+                                            "Silakan login terlebih dahulu untuk melakukan pemesanan"
+                                        );
+                                    }}
                                 >
                                     Login untuk Menyewa
                                 </Link>
+                            )}
+
+                            {/* Add booking dates information if any */}
+                            {bus.booking_dates &&
+                                bus.booking_dates.length > 0 && (
+                                    <div className="p-4 mt-4 rounded-lg bg-red-50">
+                                        <h4 className="font-medium text-red-700">
+                                            Tanggal Tidak Tersedia:
+                                        </h4>
+                                        <ul className="mt-2 space-y-1">
+                                            {bus.booking_dates.map(
+                                                (date, index) => (
+                                                    <li
+                                                        key={index}
+                                                        className="text-red-600"
+                                                    >
+                                                        {format(
+                                                            new Date(
+                                                                date.start
+                                                            ),
+                                                            "dd MMM yyyy"
+                                                        )}{" "}
+                                                        -{" "}
+                                                        {format(
+                                                            new Date(date.end),
+                                                            "dd MMM yyyy"
+                                                        )}
+                                                    </li>
+                                                )
+                                            )}
+                                        </ul>
+                                    </div>
+                                )}
+
+                            {/* Add bus status information */}
+                            {bus.status && bus.status !== "available" && (
+                                <div className="p-4 mt-4 rounded-lg bg-yellow-50">
+                                    <p className="text-yellow-700">
+                                        Status Bus:{" "}
+                                        {bus.status === "maintenance"
+                                            ? "Sedang Dalam Perawatan"
+                                            : bus.status}
+                                    </p>
+                                </div>
                             )}
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Footer */}
+            {/* Updated Footer */}
             <footer className="bg-gradient-to-r from-gray-100 to-gray-300 dark:from-gray-900 dark:to-gray-800">
                 <div className="container px-6 py-12 mx-auto">
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4">
-                        {/* Footer sections */}
                         <div>
                             <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
                                 PO Rizky Putra 168

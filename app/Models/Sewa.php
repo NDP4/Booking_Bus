@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 class Sewa extends Model
 {
+    protected $table = 'sewas';
     //
     protected $fillable = [
         'id_penyewa',
@@ -22,6 +23,10 @@ class Sewa extends Model
         'status',
         'total_harga',
         // 'lama_sewa'
+    ];
+
+    protected $attributes = [
+        'status' => 'Diproses' // Changed from 'pending' to 'Diproses'
     ];
 
     public function penyewa(): BelongsTo

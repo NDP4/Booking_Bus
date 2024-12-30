@@ -74,7 +74,7 @@ export default function About() {
                         </div>
                         <div className="relative overflow-hidden rounded-xl">
                             <img
-                                src="/images/about-bus.jpg" // Add your image
+                                src="/images/logo_rizky_putra_168.png" // Add your image
                                 alt="Bus Fleet"
                                 className="object-cover w-full h-full"
                             />
@@ -208,7 +208,7 @@ function Navbar({ className, isAuthenticated, handleLogout }) {
                 <div className="flex items-center justify-start min-w-48">
                     <Link href="/">
                         <img
-                            src="images/logo_rizky_putra_168.svg"
+                            src="/images/logo_rizky_putra_168.svg"
                             className="w-8 h-8"
                             alt="Logo"
                         />
@@ -242,7 +242,48 @@ function Navbar({ className, isAuthenticated, handleLogout }) {
 
                 {/* Rest of navbar code */}
                 <div className="flex items-center justify-center space-x-4">
-                    {!isAuthenticated ? (
+                    {isAuthenticated ? (
+                        <>
+                            <div className="relative group">
+                                <button className="flex items-center space-x-1 text-gray-700 hover:text-indigo-600">
+                                    <span>Dashboard</span>
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="w-4 h-4"
+                                        viewBox="0 0 20 20"
+                                        fill="currentColor"
+                                    >
+                                        <path
+                                            fillRule="evenodd"
+                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 011.414 1.414l-4 4a1 1 01-1.414 0l-4-4a1 1 010-1.414z"
+                                            clipRule="evenodd"
+                                        />
+                                    </svg>
+                                </button>
+                                <div className="absolute right-0 invisible w-48 py-2 mt-2 transition-all duration-200 ease-in-out bg-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 group-hover:visible">
+                                    <Link
+                                        href="/dashboard/profile"
+                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600"
+                                    >
+                                        Edit Profile
+                                    </Link>
+                                    <Link
+                                        href="/dashboard/history"
+                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600"
+                                    >
+                                        Riwayat Sewa
+                                    </Link>
+                                </div>
+                            </div>
+                            <HoverBorderGradient
+                                borderRadius="1.75rem"
+                                className="text-black bg-white dark:bg-slate-900 dark:text-white border-neutral-200 dark:border-slate-800"
+                                onClick={handleLogout}
+                            >
+                                Logout
+                            </HoverBorderGradient>
+                        </>
+                    ) : (
                         <a href="/admin">
                             <HoverBorderGradient
                                 containerClassName="rounded-full mx-1"
@@ -252,23 +293,7 @@ function Navbar({ className, isAuthenticated, handleLogout }) {
                                 <span>Login</span>
                             </HoverBorderGradient>
                         </a>
-                    ) : (
-                        <HoverBorderGradient
-                            borderRadius="1.75rem"
-                            className="text-black bg-white dark:bg-slate-900 dark:text-white border-neutral-200 dark:border-slate-800"
-                            onClick={handleLogout}
-                        >
-                            Logout
-                        </HoverBorderGradient>
                     )}
-                    {/* <a href="chatbot">
-                        <Button
-                            borderRadius="1.75rem"
-                            className="text-black bg-white dark:bg-slate-900 dark:text-white border-neutral-200 dark:border-slate-800"
-                        >
-                            Tanya CS
-                        </Button>
-                    </a> */}
                 </div>
             </div>
         </div>

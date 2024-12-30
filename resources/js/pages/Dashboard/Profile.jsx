@@ -54,11 +54,15 @@ export default function Profile({ auth }) {
                             <div className="w-20 h-20 overflow-hidden bg-gray-100 rounded-full">
                                 <img
                                     src={
-                                        auth.user.avatar_url ||
-                                        "/default-avatar.png"
+                                        auth.user.avatar_url
+                                            ? `/storage/${auth.user.avatar_url}` // Updated path
+                                            : "/default-avatar.png"
                                     }
                                     alt="Profile"
                                     className="object-cover w-full h-full"
+                                    onError={(e) => {
+                                        e.target.src = "/default-avatar.png";
+                                    }}
                                 />
                             </div>
                             <input
