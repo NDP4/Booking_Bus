@@ -1,4 +1,4 @@
-// "use client";
+import { router } from "@inertiajs/react";
 import React, { useState, useEffect } from "react";
 import {
     HoveredLink,
@@ -10,117 +10,274 @@ import { cn } from "../lib/utils"; // Pastikan utils berada di folder yang benar
 // import { Cover } from "../components/ui/cover"; // Sesuaikan path jika perlu
 import { FlipWords } from "../components/ui/flip-words"; // Sesuaikan path jika perlu
 import { Button } from "../components/ui/moving-border";
+import { HoverBorderGradient } from "../components/ui/hover-border-gradient";
+import { usePage, Link } from "@inertiajs/react";
+import { Inertia } from "@inertiajs/inertia";
+import { BackgroundGradientAnimation } from "../components/ui/background-gradient-animation";
+import { MaskContainer } from "../components/ui/svg-mask-effect";
+import { TextHoverEffect } from "../components/ui/text-hover-effect";
+import { Counter } from "../components/ui/counter";
+import { AnimatedTestimonials } from "../components/ui/animated-testimonials.tsx";
+import { FaFacebook, FaInstagram, FaTwitter, FaWhatsapp } from "react-icons/fa";
 
 export default function Home() {
+    const { auth, stats, testimonials } = usePage().props;
+    console.log("Page Props:", usePage().props); // Debug all props
+    console.log("Testimonials:", testimonials); // Debug testimonials specifically
+
+    // Add debugging logs
+    console.log("Total testimonials:", testimonials?.length);
+    console.log("Testimonials data:", testimonials);
+
+    const isAuthenticated = auth && auth.user;
+
     const words = ["Kenyamanan", "Keamanan", "Kepercayaan"];
+
+    const handleLogout = () => {
+        router.post(
+            "/logout",
+            {},
+            {
+                onSuccess: () => {
+                    window.location.href = "/";
+                },
+            }
+        );
+    };
+
     return (
-        <html>
-            <div className="relative flex items-center justify-center w-full text-white dark:bg-gray-900">
-                <Navbar className="top-2" />
-                {/* <p className="text-black dark:text-white">
-                    The Navbar will show on top of the page
-                </p> */}
+        <div className="flex flex-col min-h-screen">
+            {/* Navbar positioned at the top */}
+            <Navbar
+                className="top-0"
+                isAuthenticated={isAuthenticated}
+                handleLogout={handleLogout}
+            />
+
+            {/* Content below Navbar with margin */}
+            <div className="flex-grow">
+                <BackgroundGradientAnimation>
+                    <div className="absolute inset-0 z-50 flex items-center justify-center px-4 text-3xl font-bold text-center text-white pointer-events-none md:text-4xl lg:text-7xl">
+                        <p className="text-transparent bg-clip-text drop-shadow-2xl bg-gradient-to-b from-white/80 to-white/20">
+                            Po Rizky Putra 168
+                        </p>
+                    </div>
+                </BackgroundGradientAnimation>
             </div>
-            {/* <div>
-                <h1 className="relative z-20 py-6 mx-auto mt-6 text-4xl font-semibold text-center text-transparent md:text-4xl lg:text-6xl max-w-7xl bg-clip-text bg-gradient-to-b from-neutral-800 via-neutral-700 to-neutral-700 dark:from-neutral-800 dark:via-white dark:to-white">
-                    Build amazing websites <br /> at <Cover>warp speed</Cover>
-                </h1>
-            </div> */}
-            <div className="h-[40rem] flex justify-center items-center px-4">
-                <div className="mx-auto text-4xl font-normal text-neutral-600 dark:text-neutral-400">
-                    Untuk
-                    <FlipWords words={words} /> <br />
-                    Kami hadir untuk anda
+
+            <div className="flex items-center justify-center h-[20rem] px-6 py-8 bg-gradient-to-r from-gray-100 to-gray-300">
+                <p className="text-lg font-semibold leading-relaxed text-center text-gray-800 dark:text-gray-200 md:text-xl md:px-12">
+                    Rizky Putra 168 menjadi moda transportasi yang unggul dalam
+                    kualitas melalui pelayanan terbaik yang diberikan untuk
+                    kenyamanan dan Keamanan para penumpang.
+                </p>
+            </div>
+
+            {/* Stats Section */}
+            <div className="grid grid-cols-1 gap-8 px-6 py-12 md:grid-cols-3 bg-gradient-to-r from-gray-100 to-gray-300">
+                <div className="text-center">
+                    <h3 className="text-4xl font-bold text-gray-800">
+                        <Counter end={stats?.total_buses || 0} />
+                    </h3>
+                    <p className="mt-2 text-lg text-gray-600">
+                        Total Armada Bus
+                    </p>
+                </div>
+                <div className="text-center">
+                    <h3 className="text-4xl font-bold text-gray-800">
+                        <Counter end={stats?.total_users || 0} />
+                    </h3>
+                    <p className="mt-2 text-lg text-gray-600">Total Pengguna</p>
+                </div>
+                <div className="text-center">
+                    <h3 className="text-4xl font-bold text-gray-800">
+                        <Counter end={stats?.total_sewas || 0} />
+                    </h3>
+                    <p className="mt-2 text-lg text-gray-600">
+                        Total Penyewaan
+                    </p>
                 </div>
             </div>
-            <div className="flex items-center justify-center space-x-4">
-                <a href="http://localhost:8000/admin">
-                    <Button
-                        borderRadius="1.75rem"
-                        className="text-black bg-white dark:bg-slate-900 dark:text-white border-neutral-200 dark:border-slate-800"
-                    >
-                        Login
-                    </Button>
-                </a>
-                <a href="chatbot">
-                    <Button
-                        borderRadius="1.75rem"
-                        className="text-black bg-white dark:bg-slate-900 dark:text-white border-neutral-200 dark:border-slate-800"
-                    >
-                        Tanya CS
-                    </Button>
-                </a>
-            </div>
-        </html>
-    );
-}
 
-function Navbar({ className }) {
-    const [active, setActive] = useState(null);
-    return (
-        <div
-            className={cn(
-                "fixed top-10 inset-x-0 max-w-2xl mx-auto z-50",
-                className
-            )}
-        >
-            <Menu setActive={setActive}>
-                <MenuItem setActive={setActive} active={active} item="Home">
-                    {/* <div className="flex flex-col space-y-4 text-sm">
-                        <HoveredLink href="/web-dev">
-                            Web Development
-                        </HoveredLink>
-                        <HoveredLink href="/interface-design">
-                            Interface Design
-                        </HoveredLink>
-                        <HoveredLink href="/seo">
-                            Search Engine Optimization
-                        </HoveredLink>
-                        <HoveredLink href="/branding">Branding</HoveredLink>
-                    </div> */}
-                </MenuItem>
-                <MenuItem setActive={setActive} active={active} item="Bus">
-                    {/* <div className="grid grid-cols-2 gap-10 p-4 text-sm ">
-                        <ProductItem
-                            title="Algochurn"
-                            href="https://algochurn.com"
-                            src="https://assets.aceternity.com/demos/algochurn.webp"
-                            description="Prepare for tech interviews like never before."
+            <div className="bg-white dark:bg-gray-900">
+                {Array.isArray(testimonials) && testimonials.length > 0 ? (
+                    <div className="container px-4 py-12 mx-auto">
+                        <h2 className="mb-8 text-3xl font-bold text-center">
+                            Testimonials dari Pelanggan Kami
+                        </h2>
+                        <AnimatedTestimonials
+                            testimonials={testimonials}
+                            autoplay={testimonials.length > 1}
                         />
-                        <ProductItem
-                            title="Tailwind Master Kit"
-                            href="https://tailwindmasterkit.com"
-                            src="https://assets.aceternity.com/demos/tailwindmasterkit.webp"
-                            description="Production ready Tailwind css components for your next project"
-                        />
-                        <ProductItem
-                            title="Moonbeam"
-                            href="https://gomoonbeam.com"
-                            src="https://assets.aceternity.com/demos/Screenshot+2024-02-21+at+11.51.31%E2%80%AFPM.png"
-                            description="Never write from scratch again. Go from idea to blog in minutes."
-                        />
-                        <ProductItem
-                            title="Rogue"
-                            href="https://userogue.com"
-                            src="https://assets.aceternity.com/demos/Screenshot+2024-02-21+at+11.47.07%E2%80%AFPM.png"
-                            description="Respond to government RFPs, RFIs and RFQs 10x faster using AI"
-                        />
-                    </div> */}
-                </MenuItem>
-                <MenuItem
-                    setActive={setActive}
-                    active={active}
-                    item="Tentang Kami"
-                >
-                    {/* <div className="flex flex-col space-y-4 text-sm">
-                        <HoveredLink href="/hobby">Hobby</HoveredLink>
-                        <HoveredLink href="/individual">Individual</HoveredLink>
-                        <HoveredLink href="/team">Team</HoveredLink>
-                        <HoveredLink href="/enterprise">Enterprise</HoveredLink>
-                    </div> */}
-                </MenuItem>
-            </Menu>
+                    </div>
+                ) : (
+                    <div className="p-8 text-center">
+                        <p className="text-gray-600">
+                            No testimonials available
+                        </p>
+                    </div>
+                )}
+            </div>
+
+            <footer className="bg-gradient-to-r from-gray-100 to-gray-300 dark:from-gray-900 dark:to-gray-800">
+                <div className="container px-6 py-12 mx-auto">
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4">
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+                                PO Rizky Putra 168
+                            </h3>
+                            <p className="mt-4 text-gray-600 dark:text-gray-300">
+                                Solusi transportasi terpercaya untuk perjalanan
+                                Anda.
+                            </p>
+                        </div>
+
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+                                Kontak
+                            </h3>
+                            <ul className="mt-4 space-y-2 text-gray-600 dark:text-gray-300">
+                                <li>Telepon: (0354) 123456</li>
+                                <li>Email: info@rizkyputra168.com</li>
+                                <li>Alamat: Jl. Raya No. 168, Kediri</li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+                                Layanan
+                            </h3>
+                            <ul className="mt-4 space-y-2 text-gray-600 dark:text-gray-300">
+                                <li>Sewa Bus</li>
+                                <li>Paket Wisata</li>
+                                <li>Antar Kota</li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+                                Sosial Media
+                            </h3>
+                            <div className="flex mt-4 space-x-4">
+                                <a
+                                    href="#"
+                                    className="text-gray-600 hover:text-blue-500 dark:text-gray-300"
+                                >
+                                    <FaFacebook size={24} />
+                                </a>
+                                <a
+                                    href="#"
+                                    className="text-gray-600 hover:text-pink-500 dark:text-gray-300"
+                                >
+                                    <FaInstagram size={24} />
+                                </a>
+                                <a
+                                    href="#"
+                                    className="text-gray-600 hover:text-blue-400 dark:text-gray-300"
+                                >
+                                    <FaTwitter size={24} />
+                                </a>
+                                <a
+                                    href="#"
+                                    className="text-gray-600 hover:text-green-500 dark:text-gray-300"
+                                >
+                                    <FaWhatsapp size={24} />
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr className="my-8 border-gray-200 dark:border-gray-700" />
+
+                    <div className="text-center">
+                        <p className="text-gray-600 dark:text-gray-300">
+                            © {new Date().getFullYear()} PO Rizky Putra 168. All
+                            rights reserved.
+                        </p>
+                    </div>
+                </div>
+            </footer>
         </div>
     );
 }
 
+function Navbar({ className, isAuthenticated, handleLogout }) {
+    const [active, setActive] = useState(null);
+
+    const handleNavigation = (path) => {
+        router.get(path);
+    };
+
+    return (
+        <div className={cn(" top-10 inset-x-0 w-full mx-auto z-50", className)}>
+            <div className="flex items-center justify-between mx-5">
+                {/* Logo di kiri */}
+                <div className="flex items-center justify-start min-w-48">
+                    <Link href="/">
+                        <img
+                            src="images/logo_rizky_putra_168.svg"
+                            className="w-8 h-8"
+                            alt="Logo"
+                        />
+                    </Link>
+                </div>
+
+                {/* Menu di tengah */}
+                <Menu
+                    setActive={setActive}
+                    className="flex justify-center flex-grow"
+                >
+                    <MenuItem
+                        setActive={setActive}
+                        active={active}
+                        item="Home"
+                        onClick={() => handleNavigation("/")}
+                    />
+                    <MenuItem
+                        setActive={setActive}
+                        active={active}
+                        item="Produk"
+                        onClick={() => handleNavigation("/product")}
+                    />
+                    <MenuItem
+                        setActive={setActive}
+                        active={active}
+                        item="Tentang Kami"
+                        onClick={() => handleNavigation("/about")}
+                    />
+                </Menu>
+
+                {/* Rest of navbar code */}
+                <div className="flex items-center justify-center space-x-4">
+                    {!isAuthenticated ? (
+                        <a href="/admin">
+                            <HoverBorderGradient
+                                containerClassName="rounded-full mx-1"
+                                as="button"
+                                className="flex items-center space-x-2 text-black bg-white dark:bg-black dark:text-white"
+                            >
+                                <span>Login</span>
+                            </HoverBorderGradient>
+                        </a>
+                    ) : (
+                        <HoverBorderGradient
+                            borderRadius="1.75rem"
+                            className="text-black bg-white dark:bg-slate-900 dark:text-white border-neutral-200 dark:border-slate-800"
+                            onClick={handleLogout}
+                        >
+                            Logout
+                        </HoverBorderGradient>
+                    )}
+                    {/* <a href="chatbot">
+                        <Button
+                            borderRadius="1.75rem"
+                            className="text-black bg-white dark:bg-slate-900 dark:text-white border-neutral-200 dark:border-slate-800"
+                        >
+                            Tanya CS
+                        </Button>
+                    </a> */}
+                </div>
+            </div>
+        </div>
+    );
+}

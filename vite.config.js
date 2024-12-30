@@ -18,4 +18,16 @@ export default defineConfig({
     build: {
         outDir: "public/build",
     },
+    define: {
+        "process.env.GOOGLE_MAPS_API_KEY": JSON.stringify(
+            process.env.GOOGLE_MAPS_API_KEY
+        ),
+    },
+    // server: {
+    //     host: "0.0.0.0", // Ekspos ke semua IP
+    //     port: 5173, // Port default Vite
+    //     hmr: {
+    //         host: "192.168.5.145", // Ganti dengan IP lokal
+    //     },
+    // },
 });

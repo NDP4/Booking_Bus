@@ -16,25 +16,29 @@ const transition = {
     restSpeed: 0.001,
 };
 
-export const MenuItem = ({
+// Update the MenuItem interface/type to include onClick
+type MenuItemProps = {
+    setActive: (item: string | null) => void;
+    active: string | null;
+    item: string;
+    onClick?: () => void;
+    children?: React.ReactNode;
+};
+
+export const MenuItem: React.FC<MenuItemProps> = ({
     setActive,
     active,
     item,
+    onClick,
     children,
-}: {
-    setActive: (item: string) => void;
-    active: string | null;
-    item: string;
-    children?: React.ReactNode;
 }) => {
     return (
-        <div onMouseEnter={() => setActive(item)} className="relative ">
-            <motion.p
-                transition={{ duration: 0.3 }}
-                className="cursor-pointer text-black hover:opacity-[0.9] dark:text-white"
-            >
-                {item}
-            </motion.p>
+        <div
+            className="relative px-4 py-2 cursor-pointer"
+            onMouseEnter={() => setActive(item)}
+            onClick={onClick}
+        >
+            <p className="text-sm">{item}</p>
             {active !== null && (
                 <motion.div
                     initial={{ opacity: 0, scale: 0.85, y: 10 }}

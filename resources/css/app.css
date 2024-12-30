@@ -69,3 +69,36 @@
         @apply w-8 h-8 overflow-auto rounded-full bg-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-100 focus:ring-offset-2 focus:ring-offset-slate-800;
     }
 } */
+
+/* RC Slider Custom Styles */
+.rc-slider {
+    padding: 14px 0 !important;
+}
+
+.rc-slider-rail {
+    height: 4px !important;
+    background-color: #e5e7eb !important;
+}
+
+.rc-slider-track {
+    height: 4px !important;
+    background-color: #4f46e5 !important;
+}
+
+.rc-slider-handle {
+    border: 2px solid #4f46e5 !important;
+    background-color: white !important;
+    opacity: 1 !important;
+    width: 20px !important;
+    height: 20px !important;
+    margin-top: -8px !important;
+}
+
+.rc-slider-handle:hover {
+    border-color: #4338ca !important;
+}
+
+.rc-slider-handle:active {
+    border-color: #4338ca !important;
+    box-shadow: 0 0 0 5px rgba(79, 70, 229, 0.2) !important;
+}

@@ -21,6 +21,7 @@ class Sewa extends Model
         'tujuan',
         'status',
         'total_harga',
+        // 'lama_sewa'
     ];
 
     public function penyewa(): BelongsTo
@@ -55,9 +56,8 @@ class Sewa extends Model
 
     public static function validateBusAvailability($busId, $startDate, $endDate, $excludeId = null)
     {
-        if (self::isBusAvailable($busId, $startDate, $endDate, $excludeId)) {
-            throw new \Exception("Bus sudah dipesan pada periode waktu yang sama.");
-        }
+        // Return boolean instead of throwing exception
+        return self::isBusAvailable($busId, $startDate, $endDate, $excludeId);
     }
 
 

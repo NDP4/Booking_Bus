@@ -16,160 +16,171 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Filament\Notifications\Notification;
 use App\Models\User;
+use Filament\Forms\Components\MarkdownEditor;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Split;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ExportBulkAction;
+use Filament\Tables\Enums\ActionsPosition;
 
 class SewaResource extends Resource
 {
     protected static ?string $model = Sewa::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-calendar';
+    protected static ?string $activeNavigationIcon = 'heroicon-s-calendar';
     protected static ?string $navigationLabel = 'Sewa';
     protected static ?string $navigationGroup = 'Sewa';
-
     public static function getGloballySearchableAttributes(): array
     {
         return ['jam_penjemputan', 'tanggal_mulai', 'tanggal_selesai', 'lokasi_penjemputan', 'tujuan'];
     }
-
     public static function getLabel(): ?string
     {
         return 'Sewa';
     }
-
     public static function form(Form $form): Form
     {
         $userRole = Auth::user()->role;
-
         return $form
             ->schema([
-                Select::make('id_penyewa')
-                    ->label('Penyewa')
-                    ->relationship('penyewa', 'name')
-                    ->searchable()
-                    ->default(Auth::user()->id)
-                    ->required()
-                    ->disabled(),
+                Split::make([
+                    Section::make([
+                        Select::make('id_penyewa')
+                            ->label('Penyewa')
+                            ->relationship('penyewa', 'name')
+                            ->searchable()
+                            ->default(Auth::user()->id)
+                            ->required()
+                            ->disabled(),
+                        Select::make('id_bus')
+                            ->label('Bus')
+                            ->relationship('bus', 'nama_bus')
+                            ->searchable()
+                            ->required()
+                            ->reactive()
+                            ->options(function () {
+                                return Bus::pluck('nama_bus', 'id')->toArray();
+                            })
+                            ->afterStateUpdated(function ($state, callable $set, $get) {
+                                $tanggalMulai = $get('tanggal_mulai');
+                                $tanggalSelesai = $get('tanggal_selesai');
+                                if ($tanggalMulai && $tanggalSelesai) {
+                                    $set('total_harga', static::calculateTotalPrice($state, $tanggalMulai, $tanggalSelesai));
+                                }
+                                $startDate = $get('tanggal_mulai');
+                                $endDate = $get('tanggal_selesai');
+                                // Validasi tumpang tindih sewa bus
+                                if ($startDate && $endDate) {
+                                    try {
+                                        Sewa::validateBusAvailability($state, $startDate, $endDate);
+                                    } catch (\Exception $e) {
+                                        // Mengirimkan notifikasi kepada pengguna terkait
+                                        $user = Auth::user();  // Mendapatkan pengguna yang sedang login
+                                        Notification::make()
+                                            ->error()  // Error karena tumpang tindih
+                                            ->title('Peringatan: Bus Tidak Tersedia')
+                                            ->body('Bus sudah dipesan pada periode waktu yang sama.')
+                                            ->actions([
+                                                Action::make('Tandai Sudah Dibaca')  // Menjadikan aksi ini sebagai tombol
+                                                    ->markAsRead() // Tandai notifikasi sebagai sudah dibaca
+                                            ])
+                                            ->toDatabase() // Simpan notifikasi ke database
+                                            ->sendToDatabase(User::whereIn('role', ['admin', 'konsumen'])->get()); // Mengirim notifikasi ke admin dan konsumen
+                                        // Clear input jika terjadi tumpang tindih
+                                        $set('id_bus', null);
+                                        $set('total_harga', null);
 
-
-                Select::make('id_bus')
-                    ->label('Bus')
-                    ->relationship('bus', 'nama_bus')
-                    ->searchable()
-                    ->required()
-                    ->reactive()
-                    ->options(function () {
-                        return Bus::pluck('nama_bus', 'id')->toArray();
-                    })
-                    ->afterStateUpdated(function ($state, callable $set, $get) {
-                        $tanggalMulai = $get('tanggal_mulai');
-                        $tanggalSelesai = $get('tanggal_selesai');
-                        if ($tanggalMulai && $tanggalSelesai) {
-                            $set('total_harga', static::calculateTotalPrice($state, $tanggalMulai, $tanggalSelesai));
-                        }
-
-                        $startDate = $get('tanggal_mulai');
-                        $endDate = $get('tanggal_selesai');
-                        if ($startDate && $endDate) {
-                            try {
-                                Sewa::validateBusAvailability($state, $startDate, $endDate);
-                            } catch (\Exception $e) {
-                                $user = Auth::user();
-                                Notification::make()
-                                    ->error()
-                                    ->title('Peringatan: Bus Tidak Tersedia')
-                                    ->body('Bus sudah dipesan pada periode waktu yang sama.')
-                                    ->actions([
-                                        Action::make('Tandai Sudah Dibaca')
-                                            ->markAsRead()
-                                    ])
-                                    ->toDatabase()
-                                    ->sendToDatabase(User::whereIn('role', ['admin', 'konsumen'])->get());
-
-                                $set('id_bus', null);
-                                $set('total_harga', null);
-
-                                throw new \Exception($e->getMessage());
-                            }
-                        }
-                    }),
-
-                DatePicker::make('tanggal_mulai')
-                    ->label('Tanggal Mulai')
-                    ->required()
-                    ->reactive()
-                    ->afterStateUpdated(function ($state, callable $set, $get) {
-                        $busId = $get('id_bus');
-                        $tanggalSelesai = $get('tanggal_selesai');
-                        if ($busId && $tanggalSelesai) {
-                            $set('total_harga', static::calculateTotalPrice($busId, $state, $tanggalSelesai));
-                        }
-
-                        $busId = $get('id_bus');
-                        $tanggalSelesai = $get('tanggal_selesai');
-                        if ($busId && $tanggalSelesai) {
-                            try {
-                                Sewa::validateBusAvailability($busId, $state, $tanggalSelesai);
-                            } catch (\Exception $e) {
-                                $set('id_bus', null);
-                                $set('total_harga', null);
-                                throw new \Exception($e->getMessage());
-                            }
-                        }
-                    })
-                    ->rule('after_or_equal:today'),
-
-                DatePicker::make('tanggal_selesai')
-                    ->label('Tanggal Selesai')
-                    ->required()
-                    ->reactive()
-                    ->afterStateUpdated(function ($state, callable $set, $get) {
-                        $busId = $get('id_bus');
-                        $tanggalMulai = $get('tanggal_mulai');
-                        if ($busId && $tanggalMulai) {
-                            $set('total_harga', static::calculateTotalPrice($busId, $tanggalMulai, $state));
-                        }
-                    })
-                    ->rule('after_or_equal:tanggal_mulai')
-                    ->rule('after_or_equal:today'),
-
-                TimePicker::make('jam_penjemputan')
-                    ->label('Jam Penjemputan')
-                    ->required(),
-
-                Textarea::make('lokasi_penjemputan')
-                    ->label('Lokasi Penjemputan')
-                    ->required(),
-
-                Textarea::make('tujuan')
-                    ->label('Tujuan')
-                    ->required(),
-
-                Select::make('status')
-                    ->label('Status')
-                    ->options([
-                        'Diproses' => 'Diproses',
-                        'Berlangsung' => 'Berlangsung',
-                        'Selesai' => 'Selesai',
-                        'Dibatalkan' => 'Dibatalkan',
+                                        throw new \Exception($e->getMessage()); // Menampilkan pesan error
+                                    }
+                                }
+                            }),
+                        MarkdownEditor::make('lokasi_penjemputan')
+                            ->label('Lokasi Penjemputan')
+                            ->required(),
+                        MarkdownEditor::make('tujuan')
+                            ->label('Tujuan')
+                            ->required(),
                     ])
-                    ->default('Diproses')
-                    ->required()
-                    ->disabled($userRole === 'konsumen'),
+                        ->columnSpan(2),
+                    Section::make([
+                        DatePicker::make('tanggal_mulai')
+                            ->label('Tanggal Mulai')
+                            ->required()
+                            ->reactive()
+                            ->afterStateUpdated(function ($state, callable $set, $get) {
+                                $busId = $get('id_bus');
+                                $tanggalSelesai = $get('tanggal_selesai');
+                                if ($busId && $tanggalSelesai) {
+                                    $set('total_harga', static::calculateTotalPrice($busId, $state, $tanggalSelesai));
+                                }
 
-                TextInput::make('total_harga')
-                    ->label('Total Harga')
-                    ->required()
-                    ->numeric(),
-
-            ]);
+                                $busId = $get('id_bus');
+                                $tanggalSelesai = $get('tanggal_selesai');
+                                if ($busId && $tanggalSelesai) {
+                                    try {
+                                        Sewa::validateBusAvailability($busId, $state, $tanggalSelesai);
+                                    } catch (\Exception $e) {
+                                        $set('id_bus', null);
+                                        $set('total_harga', null);
+                                        throw new \Exception($e->getMessage());
+                                    }
+                                }
+                            })
+                            ->rule('after_or_equal:today'),
+                        DatePicker::make('tanggal_selesai')
+                            ->label('Tanggal Selesai')
+                            ->required()
+                            ->reactive()
+                            ->afterStateUpdated(function ($state, callable $set, $get) {
+                                $busId = $get('id_bus');
+                                $tanggalMulai = $get('tanggal_mulai');
+                                if ($busId && $tanggalMulai) {
+                                    $set('total_harga', static::calculateTotalPrice($busId, $tanggalMulai, $state));
+                                }
+                            })
+                            ->rule('after_or_equal:tanggal_mulai')
+                            ->rule('after_or_equal:today'),
+                        TimePicker::make('jam_penjemputan')
+                            ->label('Jam Penjemputan')
+                            ->required(),
+                        TextInput::make('total_harga')
+                            ->label('Total Harga')
+                            ->required() // Pastikan field ini wajib diisi
+                            ->numeric(),
+                        ToggleButtons::make('status')
+                            ->label('Status')
+                            ->options([
+                                'Diproses' => 'Diproses',
+                                'Berlangsung' => 'Berlangsung',
+                                'Selesai' => 'Selesai',
+                                'Dibatalkan' => 'Dibatalkan',
+                            ])
+                            ->colors([
+                                'Diproses' => 'warning',
+                                'Berlangsung' => 'info',
+                                'Selesai' => 'success',
+                                'Dibatalkan' => 'danger',
+                            ])
+                            ->default('Diproses')
+                            ->required()
+                            ->disabled($userRole === 'konsumen'),
+                    ])
+                        ->grow(false),
+                ])
+                    ->from('sm'),
+            ])
+            ->columns(1);
     }
-
     // Fungsi kalkulasi total harga
     public static function calculateTotalPrice($busId, $startDate, $endDate)
     {
@@ -177,7 +188,6 @@ class SewaResource extends Resource
         if (!$bus || !$bus->harga_sewa) {
             return 0;
         }
-
         $start = Carbon::parse($startDate);
         $end = Carbon::parse($endDate);
 
@@ -186,11 +196,8 @@ class SewaResource extends Resource
 
         return $bus->harga_sewa * $durasi;
     }
-
-
     protected function beforeSave($record)
     {
-
         $bus = Bus::find($record->id_bus);
         if ($bus) {
             if ($bus->status === 'Tidak Tersedia') {
@@ -198,28 +205,21 @@ class SewaResource extends Resource
             }
             Log::info('Bus ID: ' . $bus->id . ' - Status: ' . $bus->status);
         }
-
         $bus->status = 'Tidak Tersedia';
         $bus->save();
-
-
         $record->id_penyewa = Auth::id();
-
         if ($record->id_bus && $record->tanggal_mulai && $record->tanggal_selesai) {
             $totalHarga = static::calculateTotalPrice(
                 $record->id_bus,
                 $record->tanggal_mulai,
                 $record->tanggal_selesai
             );
-
             if ($totalHarga <= 0) {
                 throw new \Exception("Total harga harus lebih dari 0.");
             }
-
             $record->total_harga = $totalHarga;
         }
     }
-
     public static function updateBusStatus()
     {
         Log::info('Updating bus status...');
@@ -233,15 +233,11 @@ class SewaResource extends Resource
             }
         }
     }
-
-
     public static function table(Tables\Table $table): Tables\Table
     {
         $userId = Auth::id();
         $userRole = Auth::user()->role;
-
         $query = Sewa::query();
-
         if ($userRole === 'konsumen') {
             $query->where('id_penyewa', $userId);
         }
@@ -255,7 +251,6 @@ class SewaResource extends Resource
                     ->formatStateUsing(function ($record) {
                         return 'RP' . $record->id;
                     }),
-
                 TextColumn::make('penyewa.name')
                     ->label('Penyewa')
                     ->sortable()
@@ -272,16 +267,19 @@ class SewaResource extends Resource
             ])
             ->defaultSort('tanggal_mulai')
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                ActionGroup::make([
+                    ViewAction::make(),
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ])
+                    ->tooltip('Actions'),
                 Action::make('pay')
                     ->label('Bayar')
                     ->color('success')
                     ->icon('heroicon-o-credit-card')
                     ->url(fn(Sewa $record) => route('sewa.pay', $record->id)), // route laravel
                 // ->url(fn(Sewa $record) => route('payment.show', $record->id)), // route react
-                Tables\Actions\DeleteAction::make(),
-            ])
+            ], position: ActionsPosition::BeforeCells)
             ->headerActions([
                 ExportAction::make()->exporter(SewaExporter::class)
             ])
@@ -292,7 +290,6 @@ class SewaResource extends Resource
                 ExportBulkAction::make()->exporter(SewaExporter::class)
             ]);
     }
-
     public static function getPages(): array
     {
         return [

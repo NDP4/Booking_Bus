@@ -10,13 +10,23 @@ use App\Models\Sewa;
 use App\Models\sewa_crew;
 use App\Models\User;
 use Filament\Forms;
+
+
+use Filament\Forms\Components\Card;
+use Filament\Forms\Components\Select;
+
 use Filament\Forms\Components\Split;
+
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ExportBulkAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\ActionsPosition;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -26,6 +36,8 @@ class CrewSewaResource extends Resource
     protected static ?string $model = sewa_crew::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-briefcase';
+    protected static ?string $activeNavigationIcon = 'heroicon-s-briefcase';
+
     protected static ?string $navigationLabel = 'Penugasan Crew';
 
     public static function getGloballySearchableAttributes(): array
@@ -41,26 +53,29 @@ class CrewSewaResource extends Resource
     {
         return $form
             ->schema([
-                Split::make([
 
-
-                Forms\Components\Select::make('sewa_id')
-                    ->relationship('sewa', 'id')
-                    ->label('ID Sewa')
-                    ->required()
-                    ->options(
-                        Sewa::all()->pluck('id')->mapWithKeys(function ($id) {
-                            return [
-                                $id => 'RP' . $id
-                            ];
-                        })
-                    ),
-                Forms\Components\Select::make('crew_id')
-                    ->label('Nama Crew')
-                    ->required()
-                    ->options(User::crew()->pluck('name', 'id'))
-
+                Card::make()
+                    ->schema([
+                        Select::make('sewa_id')
+                            ->relationship('sewa', 'id')
+                            ->label('ID Sewa')
+                            ->native(false)
+                            ->required()
+                            ->options(
+                                Sewa::all()->pluck('id')->mapWithKeys(function ($id) {
+                                    return [
+                                        $id => 'RP' . $id
+                                    ];
+                                })
+                            ),
+                        Select::make('crew_id')
+                            ->label('Nama Crew')
+                            ->required()
+                            ->native(false)
+                            ->options(User::crew()->pluck('name', 'id'))
                     ])
+                    ->columns(2),
+                
             ]);
     }
 
@@ -108,9 +123,12 @@ class CrewSewaResource extends Resource
             ])
 
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-            ])
+                ActionGroup::make([
+                    ViewAction::make(),
+                    EditAction::make(),
+                ])
+                    ->tooltip('Actions'),
+            ], position: ActionsPosition::BeforeCells)
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),

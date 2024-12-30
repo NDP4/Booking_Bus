@@ -31,4 +31,9 @@ class Bus extends Model
         'status',
         'harga_sewa',
     ];
+
+    public function sewas()
+    {
+        return $this->hasMany(Sewa::class, 'id_bus');
+    }
 }

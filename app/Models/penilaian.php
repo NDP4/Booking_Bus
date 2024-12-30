@@ -5,10 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-
-class penilaian extends Model
+class Penilaian extends Model  // Changed to uppercase P for consistency
 {
-    //
+    protected $table = 'penilaians';
+
     protected $fillable = [
         'sewa_id',
         'penyewa_id',
@@ -16,12 +16,14 @@ class penilaian extends Model
         'ulasan',
     ];
 
-    public function sewa()
+    // Define relationship with Sewa model
+    public function sewa(): BelongsTo
     {
         return $this->belongsTo(Sewa::class, 'sewa_id');
     }
 
-    public function pengguna()
+    // Define relationship with User model
+    public function pengguna(): BelongsTo
     {
         return $this->belongsTo(User::class, 'penyewa_id');
     }

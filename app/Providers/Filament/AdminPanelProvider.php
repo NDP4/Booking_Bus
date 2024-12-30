@@ -54,10 +54,12 @@ class AdminPanelProvider extends PanelProvider
             ->sidebarCollapsibleOnDesktop()
             ->passwordReset()
             ->emailVerification()
-            ->colors([
+            ->colors(
+                [
                 'primary' => ('#457AF2'),
                 // 'secondary' => ('#00ff00'),
-            ])
+                ]
+            )
             ->font('Poppins')
             ->brandName('Po Rizky Putra 168')
             ->brandLogo(asset('images/logo_rizky_putra_168.svg'))
@@ -66,20 +68,25 @@ class AdminPanelProvider extends PanelProvider
 
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
-            ->pages([
+            ->pages(
+                [
                 Pages\Dashboard::class,
                 // CustomDashboardAdmin::class,
-            ])
+                ]
+            )
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
-            ->widgets([
+            ->widgets(
+                [
                 // Widgets\AccountWidget::class,
                 // Widgets\FilamentInfoWidget::class,
                 // ChatWidget::class,
                 PenggunaWidget::class,
                 SewaTerbaru::class,
 
-            ])
-            ->middleware([
+                ]
+            )
+            ->middleware(
+                [
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
@@ -89,12 +96,16 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
-            ])
-            ->authMiddleware([
+                ]
+            )
+            ->authMiddleware(
+                [
                 Authenticate::class,
-            ])
+                ]
+            )
 
-            ->plugins([
+            ->plugins(
+                [
                 FilamentEditProfilePlugin::make()
                     ->shouldShowAvatarForm(
                         value: true,
@@ -107,16 +118,16 @@ class AdminPanelProvider extends PanelProvider
                     ->maxWidth(MaxWidth::TwoExtraLarge)
                     ->placeholder('Ketik uncuk Mencari...')
                     ->highlightQueryStyles('background-color: yellow; font-weight: bold;'),
-            ])
-
-
-
-            ->userMenuItems([
+                ]
+            )
+            ->userMenuItems(
+                [
                 'profile' => MenuItem::make()
                     ->label('Edit Profile')
-                    ->url(fn(): string => EditProfilePage::getUrl())
+                    ->url(fn (): string => EditProfilePage::getUrl())
                     ->icon('heroicon-m-user-circle'),
-            ])
+                ]
+            )
             ->databaseNotifications();
     }
 }
