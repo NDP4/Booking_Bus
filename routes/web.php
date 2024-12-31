@@ -18,6 +18,7 @@ use Illuminate\Http\Request;  // Add this line
 use Midtrans\Config as MidtransConfig;
 use Illuminate\Support\Facades\Hash;  // Add this at the top with other imports
 use Illuminate\Support\Facades\Storage;  // Add this at the top with other imports
+use App\Http\Controllers\PenilaianController; // Add this line
 
 // Add Midtrans configuration
 MidtransConfig::$serverKey = env('MIDTRANS_SERVER_KEY');
@@ -380,9 +381,7 @@ Route::post('/sewa/{id}/cancel', function ($id) {
     try {
         $sewa = Sewa::findOrFail($id);
         $sewa->update(['status' => 'Dibatalkan']);
-
-        return redirect()->route('product.index')
-            ->with('success', 'Pesanan berhasil dibatalkan');
+        return back()->with('success', 'Pesanan berhasil dibatalkan');
     } catch (\Exception $e) {
         Log::error('Sewa cancellation error: ' . $e->getMessage());
         return back()->withErrors(['error' => 'Gagal membatalkan pesanan']);
@@ -392,8 +391,15 @@ Route::post('/sewa/{id}/cancel', function ($id) {
 // Add these routes after your existing routes
 Route::inertia('/about', 'About');
 
+Route::post('sewa/{sewa}/cancel', [SewaController::class, 'cancel'])->name('sewa.cancel');
+
 // Dashboard Routes
 Route::middleware(['auth'])->prefix('dashboard')->group(function () {
+    Route::get('/profile', function () {
+        return inertia('Dashboard/Profile', [
+            'auth' => ['user' => Auth::user()]
+        ]);
+    })->name('dashboard.profile');
     Route::get('/profile', function () {
         return inertia('Dashboard/Profile', [
             'auth' => ['user' => Auth::user()]
@@ -440,7 +446,7 @@ Route::middleware(['auth'])->prefix('dashboard')->group(function () {
 
     // Move your existing history route here
     Route::get('/history', function () {
-        $sewas = Sewa::with(['bus'])
+        $sewas = Sewa::with(['bus', 'penilaian'])
             ->where('id_penyewa', Auth::id())
             ->latest()
             ->get()
@@ -457,6 +463,11 @@ Route::middleware(['auth'])->prefix('dashboard')->group(function () {
                     'total_price' => $sewa->total_harga,
                     'status' => $sewa->status,
                     'created_at' => $sewa->created_at->format('d M Y H:i'),
+                    'has_review' => $sewa->has_review,
+                    'review' => $sewa->penilaian ? [
+                        'rating' => $sewa->penilaian->rating,
+                        'ulasan' => $sewa->penilaian->ulasan,
+                    ] : null,
                 ];
             });
 
@@ -465,4 +476,12 @@ Route::middleware(['auth'])->prefix('dashboard')->group(function () {
             'auth' => ['user' => Auth::user()]
         ]);
     })->name('dashboard.history');
+
+    // Add this new route for reviews
+    Route::post('/sewa/{sewa}/review', [PenilaianController::class, 'store'])->name('sewa.review');
 });
+
+// Replace or add this route outside of any group
+Route::post('/sewa/{sewa}/review', [PenilaianController::class, 'store'])
+    ->middleware(['auth'])
+    ->name('sewa.review');

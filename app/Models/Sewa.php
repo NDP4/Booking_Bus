@@ -21,8 +21,7 @@ class Sewa extends Model
         'lokasi_penjemputan',
         'tujuan',
         'status',
-        'total_harga',
-        // 'lama_sewa'
+        'total_harga'
     ];
 
     protected $attributes = [
@@ -39,6 +38,16 @@ class Sewa extends Model
     public function bus(): BelongsTo
     {
         return $this->belongsTo(Bus::class, 'id_bus');
+    }
+
+    public function penilaian()
+    {
+        return $this->hasOne(Penilaian::class, 'sewa_id');
+    }
+
+    public function getHasReviewAttribute()
+    {
+        return $this->penilaian()->exists();
     }
 
     public static function isBusAvailable($busId, $startDate, $endDate, $excludeId = null)

@@ -7,6 +7,8 @@ use Midtrans\Snap;
 use Midtrans\Config;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Midtrans\Transaction;
 use App\Http\Controllers\InvoiceController;
 
@@ -156,5 +158,33 @@ class SewaController extends Controller
         // Pembayaran sukses, redirect ke halaman list sewa di Filament
         return redirect()->route('filament.resources.sewas.index')
             ->with('success', 'Pembayaran berhasil, status sewa telah diperbarui.');
+    }
+
+    public function cancel(Sewa $sewa)
+    {
+        try {
+            if (!$sewa->status || $sewa->status !== 'Diproses') {
+                return back()->with('error', 'Hanya pesanan dengan status Diproses yang dapat dibatalkan');
+            }
+
+            DB::beginTransaction();
+
+            $sewa->update(['status' => 'Dibatalkan']);
+
+            // Log the cancellation
+            Log::info('Pesanan dibatalkan', [
+                'sewa_id' => $sewa->id ?? null,
+                'user_id' => Auth::id()
+            ]);
+
+            DB::commit();
+
+            return back()->with('success', 'Pesanan berhasil dibatalkan');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error cancelling order: ' . $e->getMessage());
+            return back()->with('error', 'Gagal membatalkan pesanan. Silakan coba lagi.');
+        }
     }
 }

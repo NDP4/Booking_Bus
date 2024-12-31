@@ -28,7 +28,7 @@ export default function About() {
             />
 
             {/* Hero Section */}
-            <div className="relative h-[40vh] overflow-hidden">
+            {/* <div className="relative h-[40vh] overflow-hidden">
                 <BackgroundGradientAnimation>
                     <div className="absolute inset-0 z-50 flex items-center justify-center px-4">
                         <h1 className="text-4xl font-bold text-center text-white md:text-6xl">
@@ -36,7 +36,7 @@ export default function About() {
                         </h1>
                     </div>
                 </BackgroundGradientAnimation>
-            </div>
+            </div> */}
 
             {/* Company Introduction */}
             <div className="px-6 py-20 bg-gradient-to-r from-gray-100 to-gray-300">

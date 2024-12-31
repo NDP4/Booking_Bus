@@ -1,4 +1,4 @@
-import { usePage } from "@inertiajs/react";
+import { usePage, router } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
@@ -8,6 +8,10 @@ export default function History() {
     const { sewas } = usePage().props;
     const [filterStatus, setFilterStatus] = useState("all");
     const [searchQuery, setSearchQuery] = useState("");
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [selectedSewa, setSelectedSewa] = useState(null);
+    const [rating, setRating] = useState(5);
+    const [review, setReview] = useState("");
 
     const filteredSewas = sewas.filter((sewa) => {
         const matchesStatus =
@@ -22,7 +26,7 @@ export default function History() {
         switch (status) {
             case "Diproses":
                 return "bg-yellow-100 text-yellow-800";
-            case "Dibayar":
+            case "Berlangsung":
                 return "bg-green-100 text-green-800";
             case "Selesai":
                 return "bg-blue-100 text-blue-800";
@@ -31,6 +35,51 @@ export default function History() {
             default:
                 return "bg-gray-100 text-gray-800";
         }
+    };
+
+    const handleCancel = (sewaId) => {
+        if (confirm("Apakah anda yakin ingin membatalkan pesanan ini?")) {
+            router.post(
+                `/sewa/${sewaId}/cancel`,
+                {},
+                {
+                    onSuccess: () => {
+                        // Reload the current page
+                        router.reload();
+                    },
+                    onError: () => {
+                        console.error("Gagal membatalkan pesanan");
+                    },
+                }
+            );
+        }
+    };
+
+    const handleReviewSubmit = () => {
+        router.post(
+            `/sewa/${selectedSewa}/review`,
+            {
+                rating: rating,
+                ulasan: review,
+            },
+            {
+                onSuccess: () => {
+                    setShowReviewModal(false);
+                    setSelectedSewa(null);
+                    setRating(5);
+                    setReview("");
+                    router.reload();
+                },
+                onError: (errors) => {
+                    console.error("Error submitting review:", errors);
+                },
+            }
+        );
+    };
+
+    const openReviewModal = (sewa) => {
+        setSelectedSewa(sewa.id);
+        setShowReviewModal(true);
     };
 
     return (
@@ -49,21 +98,24 @@ export default function History() {
                         >
                             Semua
                         </button>
-                        {["Diproses", "Dibayar", "Selesai", "Dibatalkan"].map(
-                            (status) => (
-                                <button
-                                    key={status}
-                                    onClick={() => setFilterStatus(status)}
-                                    className={`px-4 py-2 text-sm font-medium rounded-full ${
-                                        filterStatus === status
-                                            ? "bg-indigo-100 text-indigo-800"
-                                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                                    }`}
-                                >
-                                    {status}
-                                </button>
-                            )
-                        )}
+                        {[
+                            "Diproses",
+                            "Berlangsung",
+                            "Selesai",
+                            "Dibatalkan",
+                        ].map((status) => (
+                            <button
+                                key={status}
+                                onClick={() => setFilterStatus(status)}
+                                className={`px-4 py-2 text-sm font-medium rounded-full ${
+                                    filterStatus === status
+                                        ? "bg-indigo-100 text-indigo-800"
+                                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                }`}
+                            >
+                                {status}
+                            </button>
+                        ))}
                     </div>
                     <input
                         type="text"
@@ -132,6 +184,27 @@ export default function History() {
                                         <span className="text-sm text-gray-500">
                                             {sewa.created_at}
                                         </span>
+                                        {sewa.status === "Diproses" && (
+                                            <button
+                                                onClick={() =>
+                                                    handleCancel(sewa.id)
+                                                }
+                                                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+                                            >
+                                                Batalkan Pesanan
+                                            </button>
+                                        )}
+                                        {sewa.status === "Selesai" &&
+                                            !sewa.has_review && (
+                                                <button
+                                                    onClick={() =>
+                                                        openReviewModal(sewa)
+                                                    }
+                                                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700"
+                                                >
+                                                    Beri Ulasan
+                                                </button>
+                                            )}
                                     </div>
                                 </div>
                             </div>
@@ -165,6 +238,63 @@ export default function History() {
                     )}
                 </div>
             </div>
+
+            {/* Review Modal */}
+            {showReviewModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="w-full max-w-md p-6 bg-white rounded-lg">
+                        <h3 className="mb-4 text-lg font-semibold">
+                            Beri Ulasan
+                        </h3>
+                        <div className="mb-4">
+                            <label className="block mb-2 text-sm font-medium">
+                                Rating
+                            </label>
+                            <div className="flex gap-2">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <button
+                                        key={star}
+                                        onClick={() => setRating(star)}
+                                        className={`text-2xl ${
+                                            star <= rating
+                                                ? "text-yellow-400"
+                                                : "text-gray-300"
+                                        }`}
+                                    >
+                                        ★
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="mb-4">
+                            <label className="block mb-2 text-sm font-medium">
+                                Ulasan
+                            </label>
+                            <textarea
+                                value={review}
+                                onChange={(e) => setReview(e.target.value)}
+                                className="w-full px-3 py-2 border rounded-lg"
+                                rows="4"
+                                placeholder="Bagaimana pengalaman anda?"
+                            ></textarea>
+                        </div>
+                        <div className="flex justify-end gap-2">
+                            <button
+                                onClick={() => setShowReviewModal(false)}
+                                className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={handleReviewSubmit}
+                                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
+                            >
+                                Kirim Ulasan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </DashboardLayout>
     );
 }
