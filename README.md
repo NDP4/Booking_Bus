@@ -113,7 +113,7 @@ php artisan serve
 npm run dev
 ```
 
-⚙️ Konfigurasi
+## ⚙️ Konfigurasi
 Environment Variables
 
 ```
@@ -123,21 +123,21 @@ MIDTRANS_SERVER_KEY=your_server_key
 MIDTRANS_IS_PRODUCTION=false
 ```
 
-👥 Peran Pengguna
-Admin
+## 👥 Peran Pengguna
+-   **Admin**
 
 -   Manajemen bus dan pemesanan
 -   Lihat laporan dan analitik
 -   Kelola pengguna
 -   Proses pembatalan/refund
-    Pelanggan
+-   **Pelanggan**
 
 -   Cari dan pesan bus
 -   Lakukan pembayaran
 -   Lihat riwayat pemesanan
 -   Beri ulasan
 
-📱 Endpoint API
+## 📱 Endpoint API
 
 -   /product - Daftar bus
 -   /product/{id} - Detail bus
@@ -145,7 +145,7 @@ Admin
 -   /dashboard/history - Riwayat pemesanan
 -   /sewa/{id}/review - Submit ulasan
 
-🔒 Keamanan
+## 🔒 Keamanan
 
 -   CSRF Protection
 -   SQL Injection Prevention
@@ -153,7 +153,7 @@ Admin
 -   Rate Limiting
 -   Secure Payment Handling
 
-🤝 Kontribusi
+## 🤝 Kontribusi
 
 1.  Fork repositori
 2.  Buat branch fitur (git checkout -b fitur/AmazingFeature)
@@ -161,7 +161,7 @@ Admin
 4.  Push ke branch (git push origin fitur/AmazingFeature)
 5.  Buat Pull Request
 
-📄 Lisensi
+## 📄 Lisensi
 
 Proyek ini dilisensikan di bawah Lisensi MIT.
 
