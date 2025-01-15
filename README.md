@@ -2,6 +2,14 @@
 
 Sistem manajemen penyewaan bus modern menggunakan Laravel, React, dan Filament Admin Panel dengan pembayaran online melalui Midtrans.
 
+## Teknologi Utama
+- **Backend:** Laravel 10.x, PHP 8.2
+- **Frontend:** React.js, Tailwind CSS
+- **Database:** MariaDB 10.5
+- **Admin Panel:** Filament
+- **Payment:** Midtrans Gateway
+- **Deployment:** Docker, NGINX
+
 ## ✨ Fitur Utama
 
 -   **Sistem Pemesanan**
@@ -64,10 +72,45 @@ Sistem manajemen penyewaan bus modern menggunakan Laravel, React, dan Filament A
 
 ### Pengembangan Lokal
 
-1. Clone repositori & instal dependensi
-
+1. Clone repositori
 ```
 git clone https://github.com/NDP4/Booking_Bus.git
+cd Booking_Bus
+```
+
+2. Install dependensi backend
+```
+composer install
+```
+
+3. Install dependensi frontend
+```
+npm install
+```
+
+4. Copy file .env.example ke .env dan sesuaikan konfigurasi
+```
+cp .env.example .env
+```
+
+5. Generate key aplikasi
+```
+php artisan key:generate
+```
+
+6. Jalankan migrasi dan seeder
+```
+php artisan migrate --seed
+```
+
+7. Jalankan server pengembangan
+```
+php artisan serve
+```
+
+8. Jalankan Vite untuk development
+```
+npm run dev
 ```
 
 ⚙️ Konfigurasi
