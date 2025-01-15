@@ -7,7 +7,7 @@
 /public/storage
 /storage/*.key
 /.env
-.env.*
+# .env.*
 Homestead.json
 Homestead.yaml
 npm-debug.log
