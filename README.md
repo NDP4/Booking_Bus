@@ -139,11 +139,11 @@ MIDTRANS_IS_PRODUCTION=false
 
 ## 📱 Endpoint API
 
--   /product - Daftar bus
--   /product/{id} - Detail bus
--   /product/{id}/sewa - Form pemesanan
--   /dashboard/history - Riwayat pemesanan
--   /sewa/{id}/review - Submit ulasan
+-   `/product` - Daftar bus
+-   `/product/{id}` - Detail bus
+-   `/product/{id}/sewa` - Form pemesanan
+-   `/dashboard/history` - Riwayat pemesanan
+-   `/sewa/{id}/review` - Submit ulasan
 
 ## 🔒 Keamanan
 
