@@ -126,16 +126,16 @@ MIDTRANS_IS_PRODUCTION=false
 ## 👥 Peran Pengguna
 -   **Admin**
 
--   Manajemen bus dan pemesanan
--   Lihat laporan dan analitik
--   Kelola pengguna
--   Proses pembatalan/refund
+    -   Manajemen bus dan pemesanan
+    -   Lihat laporan dan analitik
+    -   Kelola pengguna
+    -   Proses pembatalan/refund
 -   **Pelanggan**
 
--   Cari dan pesan bus
--   Lakukan pembayaran
--   Lihat riwayat pemesanan
--   Beri ulasan
+    -   Cari dan pesan bus
+    -   Lakukan pembayaran
+    -   Lihat riwayat pemesanan
+    -   Beri ulasan
 
 ## 📱 Endpoint API
 
