@@ -907,6 +907,7 @@ class ComposerStaticInit589cc0f65c3aaa7d4e9024d545bc1974
         'App\\Http\\Controllers\\Controller' => __DIR__ . '/../..' . '/app/Http/Controllers/Controller.php',
         'App\\Http\\Controllers\\HomeController' => __DIR__ . '/../..' . '/app/Http/Controllers/HomeController.php',
         'App\\Http\\Controllers\\InvoiceController' => __DIR__ . '/../..' . '/app/Http/Controllers/InvoiceController.php',
+        'App\\Http\\Controllers\\PenilaianController' => __DIR__ . '/../..' . '/app/Http/Controllers/PenilaianController.php',
         'App\\Http\\Controllers\\SewaController' => __DIR__ . '/../..' . '/app/Http/Controllers/SewaController.php',
         'App\\Http\\Middleware\\HandleInertiaRequests' => __DIR__ . '/../..' . '/app/Http/Middleware/HandleInertiaRequests.php',
         'App\\Models\\Bus' => __DIR__ . '/../..' . '/app/Models/Bus.php',

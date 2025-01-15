@@ -39,129 +39,115 @@ export default function Profile({ auth }) {
     return (
         <DashboardLayout active="profile">
             <Toaster position="top-right" />
-            <div className="p-6">
-                <h2 className="mb-6 text-2xl font-bold text-gray-900">
-                    Edit Profile
-                </h2>
+            <div className="p-8">
+                <div className="max-w-3xl mx-auto space-y-8">
+                    <div className="pb-6 border-b">
+                        <h2 className="text-2xl font-semibold text-gray-900">
+                            Edit Profile
+                        </h2>
+                        <p className="mt-1 text-sm text-gray-500">
+                            Update your personal information and account
+                            settings
+                        </p>
+                    </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Profile Photo */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                            Profile Photo
-                        </label>
-                        <div className="flex items-center mt-2 space-x-4">
-                            <div className="w-20 h-20 overflow-hidden bg-gray-100 rounded-full">
+                    <form onSubmit={handleSubmit} className="space-y-8">
+                        {/* Profile Photo */}
+                        <div className="flex items-center gap-8">
+                            <div className="w-24 h-24 overflow-hidden bg-gray-100 rounded-full shadow ring-4 ring-white">
                                 <img
                                     src={
                                         auth.user.avatar_url
-                                            ? `/storage/${auth.user.avatar_url}` // Updated path
+                                            ? `/storage/${auth.user.avatar_url}`
                                             : "/default-avatar.png"
                                     }
                                     alt="Profile"
                                     className="object-cover w-full h-full"
-                                    onError={(e) => {
-                                        e.target.src = "/default-avatar.png";
-                                    }}
                                 />
                             </div>
-                            <input
-                                type="file"
-                                name="avatar"
-                                onChange={handleChange}
-                                className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Name & Email */}
-                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">
-                                Name
-                            </label>
-                            <input
-                                type="text"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleChange}
-                                className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">
-                                Email
-                            </label>
-                            <input
-                                type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Phone */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                            Phone
-                        </label>
-                        <input
-                            type="tel"
-                            name="phone"
-                            value={formData.phone}
-                            onChange={handleChange}
-                            className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        />
-                    </div>
-
-                    {/* Password Change */}
-                    <div className="pt-6 space-y-6 border-t">
-                        <h3 className="text-lg font-medium text-gray-900">
-                            Change Password
-                        </h3>
-
-                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Current Password
+                                <label className="block mb-2 text-sm font-medium text-gray-700">
+                                    Change Photo
                                 </label>
                                 <input
-                                    type="password"
-                                    name="current_password"
-                                    value={formData.current_password}
+                                    type="file"
+                                    name="avatar"
                                     onChange={handleChange}
-                                    className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    New Password
-                                </label>
-                                <input
-                                    type="password"
-                                    name="new_password"
-                                    value={formData.new_password}
-                                    onChange={handleChange}
-                                    className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    className="text-sm transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:bg-indigo-50 file:text-indigo-700 file:font-semibold hover:file:bg-indigo-100"
                                 />
                             </div>
                         </div>
-                    </div>
 
-                    {/* Submit Button */}
-                    <div className="flex justify-end">
-                        <button
-                            type="submit"
-                            className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
-                            Save Changes
-                        </button>
-                    </div>
-                </form>
+                        {/* Form Grid */}
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            {/* Name & Email Fields */}
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="block mb-2 text-sm font-medium text-gray-700">
+                                        Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block mb-2 text-sm font-medium text-gray-700">
+                                        Email
+                                    </label>
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Phone & Password Fields */}
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="block mb-2 text-sm font-medium text-gray-700">
+                                        Phone
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        name="phone"
+                                        value={formData.phone}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block mb-2 text-sm font-medium text-gray-700">
+                                        New Password
+                                    </label>
+                                    <input
+                                        type="password"
+                                        name="new_password"
+                                        value={formData.new_password}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Submit Button */}
+                        <div className="flex justify-end pt-6">
+                            <button
+                                type="submit"
+                                className="px-6 py-3 font-medium text-white transition-colors bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            >
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </DashboardLayout>
     );

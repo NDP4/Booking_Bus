@@ -174,6 +174,33 @@ class SewaResource extends Resource
                             ->default('Diproses')
                             ->required()
                             ->disabled($userRole === 'konsumen'),
+                        Select::make('payment_status')
+                            ->label('Status Pembayaran')
+                            ->options([
+                                'unpaid' => 'Belum Dibayar',
+                                'pending' => 'Menunggu Pembayaran',
+                                'paid' => 'Sudah Dibayar',
+                                'failed' => 'Gagal',
+                                'cancelled' => 'Dibatalkan'
+                            ])
+                            ->required()
+                            ->default('unpaid')
+                            ->disabled(function ($record) {
+                                // Disable editing if payment is completed
+                                return $record && $record->payment_status === 'paid';
+                            }),
+                        Select::make('status')
+                            ->label('Status Sewa')
+                            ->options([
+                                'Diproses' => 'Diproses',
+                                'Menunggu Pembayaran' => 'Menunggu Pembayaran',
+                                'Dibayar' => 'Dibayar',
+                                'Berlangsung' => 'Berlangsung',
+                                'Selesai' => 'Selesai',
+                                'Dibatalkan' => 'Dibatalkan',
+                            ])
+                            ->required()
+                            ->default('Diproses'),
                     ])
                         ->grow(false),
                 ])
@@ -264,6 +291,38 @@ class SewaResource extends Resource
                 TextColumn::make('tujuan')->label('Tujuan'),
                 TextColumn::make('status')->label('Status')->badge(),
                 TextColumn::make('total_harga')->label('Total Harga')->money('IDR', true),
+                Tables\Columns\TextColumn::make('payment_status')
+                    ->label('Status Pembayaran')
+                    ->badge()
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
+                        'unpaid' => 'Belum Dibayar',
+                        'pending' => 'Menunggu Pembayaran',
+                        'paid' => 'Sudah Dibayar',
+                        'failed' => 'Gagal',
+                        'cancelled' => 'Dibatalkan',
+                        default => $state,
+                    })
+                    ->color(fn(string $state): string => match ($state) {
+                        'unpaid' => 'danger',
+                        'pending' => 'warning',
+                        'paid' => 'success',
+                        'failed' => 'danger',
+                        'cancelled' => 'danger',
+                        default => 'secondary',
+                    }),
+
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Status Sewa')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'Diproses' => 'warning',
+                        'Menunggu Pembayaran' => 'warning',
+                        'Dibayar' => 'success',
+                        'Berlangsung' => 'primary',
+                        'Selesai' => 'success',
+                        'Dibatalkan' => 'danger',
+                        default => 'secondary',
+                    })
             ])
             ->defaultSort('tanggal_mulai')
             ->actions([
@@ -288,6 +347,27 @@ class SewaResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
                 ExportBulkAction::make()->exporter(SewaExporter::class)
+            ])
+            ->filters([
+                Tables\Filters\SelectFilter::make('payment_status')
+                    ->label('Status Pembayaran')
+                    ->options([
+                        'unpaid' => 'Belum Dibayar',
+                        'pending' => 'Menunggu Pembayaran',
+                        'paid' => 'Sudah Dibayar',
+                        'failed' => 'Gagal',
+                        'cancelled' => 'Dibatalkan'
+                    ]),
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('Status Sewa')
+                    ->options([
+                        'Diproses' => 'Diproses',
+                        'Menunggu Pembayaran' => 'Menunggu Pembayaran',
+                        'Dibayar' => 'Dibayar',
+                        'Berlangsung' => 'Berlangsung',
+                        'Selesai' => 'Selesai',
+                        'Dibatalkan' => 'Dibatalkan',
+                    ]),
             ]);
     }
     public static function getPages(): array

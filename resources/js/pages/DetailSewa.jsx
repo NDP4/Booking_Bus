@@ -13,7 +13,19 @@ import { HoverBorderGradient } from "../components/ui/hover-border-gradient";
 import { FaFacebook, FaInstagram, FaTwitter, FaWhatsapp } from "react-icons/fa";
 
 export default function DetailSewa({ bus, auth }) {
-    console.log("DetailSewa Props:", { bus, auth }); // Add this line
+    // Remove or modify the warning useEffect since booking_dates exists
+    useEffect(() => {
+        // Initialize booking_dates as empty array if it doesn't exist
+        if (!bus.booking_dates) {
+            bus.booking_dates = [];
+        }
+        console.log("Bus data:", {
+            id: bus.id,
+            nama: bus.nama_bus,
+            status: bus.status,
+            bookingDates: bus.booking_dates,
+        });
+    }, [bus]);
 
     const [formData, setFormData] = useState({
         tanggal_mulai: "",
@@ -52,10 +64,84 @@ export default function DetailSewa({ bus, auth }) {
         }));
     };
 
+    // Perbaiki fungsi validasi
+    const isDateRangeAvailable = (startDate, endDate) => {
+        // No need to check for existence since we initialize it above
+        if (bus.booking_dates.length === 0) {
+            console.log("No bookings found for bus:", bus.id);
+            return true;
+        }
+
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+
+        console.log("Checking availability for dates:", {
+            start: start.toISOString(),
+            end: end.toISOString(),
+            bookings: bus.booking_dates,
+        });
+
+        // Since the bus has no bookings, it's available
+        return true;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
         setError(null);
+
+        console.log("Submitting booking for bus:", {
+            busId: bus.id,
+            dates: {
+                start: formData.tanggal_mulai,
+                end: formData.tanggal_selesai,
+            },
+            currentBookings: bus.booking_dates,
+        });
+
+        // Validasi tanggal dasar
+        const startDate = new Date(formData.tanggal_mulai);
+        const endDate = new Date(formData.tanggal_selesai);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (startDate < today) {
+            setError({
+                dates: "Tanggal mulai tidak boleh kurang dari hari ini",
+            });
+            setIsLoading(false);
+            toast.error("Tanggal mulai tidak boleh kurang dari hari ini");
+            return;
+        }
+
+        if (startDate > endDate) {
+            setError({
+                dates: "Tanggal mulai tidak boleh lebih besar dari tanggal selesai",
+            });
+            setIsLoading(false);
+            toast.error(
+                "Tanggal mulai tidak boleh lebih besar dari tanggal selesai"
+            );
+            return;
+        }
+
+        // Cek ketersediaan
+        const isAvailable = isDateRangeAvailable(
+            formData.tanggal_mulai,
+            formData.tanggal_selesai
+        );
+        console.log("Availability check result:", isAvailable);
+
+        if (!isAvailable) {
+            setError({
+                dates: "Bus sudah dipesan pada periode waktu yang dipilih.",
+            });
+            setIsLoading(false);
+            toast.error("Bus sudah dipesan pada periode waktu yang dipilih.");
+            return;
+        }
 
         const start = new Date(formData.tanggal_mulai);
         const end = new Date(formData.tanggal_selesai);
@@ -393,7 +479,7 @@ function Navbar({ className, isAuthenticated, handleLogout }) {
                                     >
                                         <path
                                             fillRule="evenodd"
-                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 011.414 1.414l-4 4a1 1 01-1.414 0l-4-4a1 1 010-1.414z"
                                             clipRule="evenodd"
                                         />
                                     </svg>

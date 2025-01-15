@@ -7,4 +7,6 @@ return [
     'is_production' => false,
     'is_sanitized' => true,
     'is_3ds' => true,
+    'redirect_url' => env('APP_URL') . '/dashboard/history',
+    'finish_redirect_url' => env('APP_URL') . '/dashboard/history',
 ];

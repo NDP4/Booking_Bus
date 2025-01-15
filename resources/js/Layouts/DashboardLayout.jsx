@@ -114,7 +114,7 @@ export default function DashboardLayout({ children, active = "profile" }) {
     const { auth } = usePage().props;
 
     return (
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen bg-gray-50">
             {/* Add Navbar */}
             <Navbar
                 className="top-0"
@@ -122,45 +122,47 @@ export default function DashboardLayout({ children, active = "profile" }) {
                 handleLogout={() => router.post("/logout")}
             />
 
-            {/* Main Content */}
-            <div className="flex-grow py-6">
+            {/* Updated Main Content */}
+            <div className="flex-grow py-8">
                 <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
+                    <div className="grid grid-cols-12 gap-6">
                         {/* Sidebar */}
-                        <div className="col-span-1">
-                            <div className="bg-white rounded-lg shadow">
-                                <nav className="space-y-1">
-                                    {[
-                                        {
-                                            name: "Profile",
-                                            href: "/dashboard/profile",
-                                            current: active === "profile",
-                                        },
-                                        {
-                                            name: "Riwayat Sewa",
-                                            href: "/dashboard/history",
-                                            current: active === "history",
-                                        },
-                                    ].map((item) => (
-                                        <Link
-                                            key={item.name}
-                                            href={item.href}
-                                            className={`${
-                                                item.current
-                                                    ? "bg-indigo-50 text-indigo-600"
-                                                    : "text-gray-600 hover:bg-gray-50"
-                                            } flex items-center px-4 py-3 text-sm font-medium`}
-                                        >
-                                            {item.name}
-                                        </Link>
-                                    ))}
-                                </nav>
+                        <div className="col-span-12 md:col-span-3">
+                            <div className="sticky top-24">
+                                <div className="p-1 bg-white shadow-sm rounded-2xl">
+                                    <nav className="space-y-1">
+                                        {[
+                                            {
+                                                name: "Profile",
+                                                href: "/dashboard/profile",
+                                                current: active === "profile",
+                                            },
+                                            {
+                                                name: "Riwayat Sewa",
+                                                href: "/dashboard/history",
+                                                current: active === "history",
+                                            },
+                                        ].map((item) => (
+                                            <Link
+                                                key={item.name}
+                                                href={item.href}
+                                                className={`${
+                                                    item.current
+                                                        ? "bg-indigo-50 text-indigo-600 border-indigo-600"
+                                                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-transparent"
+                                                } flex items-center px-4 py-3 text-sm font-medium rounded-xl border-l-4 transition-all duration-200`}
+                                            >
+                                                {item.name}
+                                            </Link>
+                                        ))}
+                                    </nav>
+                                </div>
                             </div>
                         </div>
 
                         {/* Main Content Area */}
-                        <div className="col-span-1 md:col-span-3">
-                            <div className="overflow-hidden bg-white rounded-lg shadow">
+                        <div className="col-span-12 md:col-span-9">
+                            <div className="overflow-hidden bg-white shadow-sm rounded-2xl">
                                 {children}
                             </div>
                         </div>

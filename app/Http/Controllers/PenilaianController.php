@@ -37,4 +37,21 @@ class PenilaianController extends Controller
 
         return back()->with('success', 'Ulasan berhasil dikirim');
     }
+
+    public function getReviews($busId)
+    {
+        $reviews = Penilaian::join('sewas', 'penilaians.sewa_id', '=', 'sewas.id')
+            ->join('users', 'penilaians.penyewa_id', '=', 'users.id')
+            ->where('sewas.id_bus', $busId)
+            ->select('penilaians.*', 'users.name as user_name')
+            ->get();
+
+        $averageRating = $reviews->avg('rating');
+
+        return response()->json([
+            'reviews' => $reviews,
+            'average_rating' => round($averageRating, 1),
+            'review_count' => $reviews->count()
+        ]);
+    }
 }

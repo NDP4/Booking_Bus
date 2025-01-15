@@ -60,6 +60,7 @@ return array(
     'App\\Http\\Controllers\\Controller' => $baseDir . '/app/Http/Controllers/Controller.php',
     'App\\Http\\Controllers\\HomeController' => $baseDir . '/app/Http/Controllers/HomeController.php',
     'App\\Http\\Controllers\\InvoiceController' => $baseDir . '/app/Http/Controllers/InvoiceController.php',
+    'App\\Http\\Controllers\\PenilaianController' => $baseDir . '/app/Http/Controllers/PenilaianController.php',
     'App\\Http\\Controllers\\SewaController' => $baseDir . '/app/Http/Controllers/SewaController.php',
     'App\\Http\\Middleware\\HandleInertiaRequests' => $baseDir . '/app/Http/Middleware/HandleInertiaRequests.php',
     'App\\Models\\Bus' => $baseDir . '/app/Models/Bus.php',

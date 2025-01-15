@@ -37,6 +37,17 @@ export default function History() {
         }
     };
 
+    const getPaymentStatusColor = (paymentStatus) => {
+        switch (paymentStatus) {
+            case "unpaid":
+                return "bg-yellow-100 text-yellow-800";
+            case "paid":
+                return "bg-green-100 text-green-800";
+            default:
+                return "bg-gray-100 text-gray-800";
+        }
+    };
+
     const handleCancel = (sewaId) => {
         if (confirm("Apakah anda yakin ingin membatalkan pesanan ini?")) {
             router.post(
@@ -82,61 +93,69 @@ export default function History() {
         setShowReviewModal(true);
     };
 
+    const handleContinuePayment = (sewaId) => {
+        // Update the path to include /dashboard prefix
+        router.get(`/dashboard/sewa/${sewaId}/continue-payment`);
+    };
+
     return (
         <DashboardLayout active="history">
-            <div className="p-6">
-                {/* Filters */}
-                <div className="mb-6 space-y-4">
-                    <div className="flex flex-wrap gap-2">
-                        <button
-                            onClick={() => setFilterStatus("all")}
-                            className={`px-4 py-2 text-sm font-medium rounded-full ${
-                                filterStatus === "all"
-                                    ? "bg-indigo-100 text-indigo-800"
-                                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                            }`}
-                        >
-                            Semua
-                        </button>
-                        {[
-                            "Diproses",
-                            "Berlangsung",
-                            "Selesai",
-                            "Dibatalkan",
-                        ].map((status) => (
-                            <button
-                                key={status}
-                                onClick={() => setFilterStatus(status)}
-                                className={`px-4 py-2 text-sm font-medium rounded-full ${
-                                    filterStatus === status
-                                        ? "bg-indigo-100 text-indigo-800"
-                                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                                }`}
-                            >
-                                {status}
-                            </button>
-                        ))}
+            <div className="p-8">
+                <div className="max-w-4xl mx-auto space-y-8">
+                    {/* Header */}
+                    <div className="pb-6 border-b">
+                        <h2 className="text-2xl font-semibold text-gray-900">
+                            Riwayat Sewa
+                        </h2>
+                        <p className="mt-1 text-sm text-gray-500">
+                            Manage your rental history and transactions
+                        </p>
                     </div>
-                    <input
-                        type="text"
-                        placeholder="Cari berdasarkan bus atau tujuan..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                    />
-                </div>
 
-                {/* Transaction List */}
-                <div className="space-y-4">
-                    {filteredSewas.map((sewa) => (
-                        <div
-                            key={sewa.id}
-                            className="overflow-hidden bg-white border rounded-lg shadow-sm"
-                        >
-                            <div className="p-4">
-                                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                                    <div className="flex gap-4">
-                                        <div className="w-24 h-24 overflow-hidden bg-gray-100 rounded-lg">
+                    {/* Filters */}
+                    <div className="flex flex-col gap-4">
+                        <div className="flex flex-wrap gap-2">
+                            {[
+                                "all",
+                                "Diproses",
+                                "Berlangsung",
+                                "Selesai",
+                                "Dibatalkan",
+                            ].map((status) => (
+                                <button
+                                    key={status}
+                                    onClick={() => setFilterStatus(status)}
+                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all
+                                        ${
+                                            filterStatus === status
+                                                ? "bg-indigo-100 text-indigo-700 ring-2 ring-indigo-600 ring-offset-2"
+                                                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                        }`}
+                                >
+                                    {status === "all" ? "Semua" : status}
+                                </button>
+                            ))}
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Cari berdasarkan bus atau tujuan..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        />
+                    </div>
+
+                    {/* Transaction List */}
+                    <div className="space-y-4">
+                        {filteredSewas.map((sewa) => (
+                            <div
+                                key={sewa.id}
+                                className="overflow-hidden transition-shadow bg-white border border-gray-200 rounded-xl hover:shadow-md"
+                            >
+                                <div className="p-6">
+                                    <div className="flex flex-col gap-6 md:flex-row">
+                                        {/* Bus Image */}
+                                        <div className="w-full h-32 overflow-hidden bg-gray-100 rounded-lg md:w-48">
                                             <img
                                                 src={
                                                     sewa.bus_image ||
@@ -146,96 +165,137 @@ export default function History() {
                                                 className="object-cover w-full h-full"
                                             />
                                         </div>
-                                        <div>
-                                            <h3 className="text-lg font-semibold">
-                                                {sewa.bus_name}
-                                            </h3>
-                                            <p className="text-sm text-gray-600">
-                                                {format(
-                                                    new Date(sewa.start_date),
-                                                    "d MMMM yyyy",
-                                                    { locale: id }
-                                                )}{" "}
-                                                -{" "}
-                                                {format(
-                                                    new Date(sewa.end_date),
-                                                    "d MMMM yyyy",
-                                                    { locale: id }
+
+                                        {/* Details */}
+                                        <div className="flex-grow space-y-4">
+                                            <div className="flex items-start justify-between">
+                                                <div>
+                                                    <h3 className="text-lg font-semibold text-gray-900">
+                                                        {sewa.bus_name}
+                                                    </h3>
+                                                    <p className="text-sm text-gray-500">
+                                                        {format(
+                                                            new Date(
+                                                                sewa.start_date
+                                                            ),
+                                                            "d MMMM yyyy"
+                                                        )}{" "}
+                                                        -{" "}
+                                                        {format(
+                                                            new Date(
+                                                                sewa.end_date
+                                                            ),
+                                                            "d MMMM yyyy"
+                                                        )}
+                                                    </p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <span className="text-lg font-bold text-gray-900">
+                                                        Rp{" "}
+                                                        {sewa.total_price.toLocaleString()}
+                                                    </span>
+                                                    <div className="flex gap-2 mt-2">
+                                                        <span
+                                                            className={`px-3 py-1 text-xs font-medium rounded-full
+                                                            ${getStatusColor(
+                                                                sewa.status
+                                                            )}`}
+                                                        >
+                                                            {sewa.status}
+                                                        </span>
+                                                        <span
+                                                            className={`px-3 py-1 text-xs font-medium rounded-full
+                                                            ${getPaymentStatusColor(
+                                                                sewa.payment_status
+                                                            )}`}
+                                                        >
+                                                            {sewa.payment_status ===
+                                                            "unpaid"
+                                                                ? "Belum Dibayar"
+                                                                : "Sudah Dibayar"}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Action Buttons */}
+                                            <div className="flex flex-wrap gap-3 pt-4">
+                                                {/* ... existing conditional buttons with updated styling ... */}
+                                                {sewa.status === "Diproses" && (
+                                                    <button
+                                                        onClick={() =>
+                                                            handleCancel(
+                                                                sewa.id
+                                                            )
+                                                        }
+                                                        className="px-4 py-2 text-sm font-medium text-red-600 transition-colors rounded-lg bg-red-50 hover:bg-red-100"
+                                                    >
+                                                        Batalkan Pesanan
+                                                    </button>
                                                 )}
-                                            </p>
-                                            <p className="text-sm text-gray-600">
-                                                {sewa.location} →{" "}
-                                                {sewa.destination}
-                                            </p>
+
+                                                {sewa.status !== "Dibatalkan" &&
+                                                    sewa.payment_status ===
+                                                        "unpaid" && (
+                                                        <button
+                                                            onClick={() =>
+                                                                handleContinuePayment(
+                                                                    sewa.id
+                                                                )
+                                                            }
+                                                            className="px-4 py-2 text-sm font-medium text-white transition-colors bg-indigo-600 rounded-lg hover:bg-indigo-700"
+                                                        >
+                                                            Lanjutkan Pembayaran
+                                                        </button>
+                                                    )}
+
+                                                {sewa.status === "Selesai" &&
+                                                    !sewa.has_review && (
+                                                        <button
+                                                            onClick={() =>
+                                                                openReviewModal(
+                                                                    sewa
+                                                                )
+                                                            }
+                                                            className="px-4 py-2 text-sm font-medium text-green-600 transition-colors rounded-lg bg-green-50 hover:bg-green-100"
+                                                        >
+                                                            Beri Ulasan
+                                                        </button>
+                                                    )}
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="flex flex-col items-end gap-2">
-                                        <span className="text-lg font-bold">
-                                            Rp{" "}
-                                            {sewa.total_price.toLocaleString()}
-                                        </span>
-                                        <span
-                                            className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(
-                                                sewa.status
-                                            )}`}
-                                        >
-                                            {sewa.status}
-                                        </span>
-                                        <span className="text-sm text-gray-500">
-                                            {sewa.created_at}
-                                        </span>
-                                        {sewa.status === "Diproses" && (
-                                            <button
-                                                onClick={() =>
-                                                    handleCancel(sewa.id)
-                                                }
-                                                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
-                                            >
-                                                Batalkan Pesanan
-                                            </button>
-                                        )}
-                                        {sewa.status === "Selesai" &&
-                                            !sewa.has_review && (
-                                                <button
-                                                    onClick={() =>
-                                                        openReviewModal(sewa)
-                                                    }
-                                                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700"
-                                                >
-                                                    Beri Ulasan
-                                                </button>
-                                            )}
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
 
-                    {filteredSewas.length === 0 && (
-                        <div className="py-12 text-center">
-                            <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-gray-50">
-                                <svg
-                                    className="w-8 h-8 text-gray-400"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                                    />
-                                </svg>
+                        {/* Empty State */}
+                        {filteredSewas.length === 0 && (
+                            <div className="py-12 text-center">
+                                <div className="flex items-center justify-center w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full">
+                                    <svg
+                                        className="w-12 h-12 text-gray-400"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                        />
+                                    </svg>
+                                </div>
+                                <h3 className="text-sm font-medium text-gray-900">
+                                    Tidak ada riwayat sewa
+                                </h3>
+                                <p className="mt-1 text-sm text-gray-500">
+                                    Belum ada transaksi sewa yang tercatat.
+                                </p>
                             </div>
-                            <h3 className="text-sm font-medium text-gray-900">
-                                Tidak ada riwayat sewa
-                            </h3>
-                            <p className="mt-1 text-sm text-gray-500">
-                                Belum ada transaksi sewa yang tercatat.
-                            </p>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
             </div>
 

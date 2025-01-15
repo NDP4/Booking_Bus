@@ -21,12 +21,35 @@ class Sewa extends Model
         'lokasi_penjemputan',
         'tujuan',
         'status',
-        'total_harga'
+        'total_harga',
+        'snap_token',
+        'payment_status'  // Make sure this is included
     ];
 
     protected $attributes = [
-        'status' => 'Diproses' // Changed from 'pending' to 'Diproses'
+        'status' => 'Diproses', // Changed from 'pending' to 'Diproses'
+        'payment_status' => 'unpaid'
     ];
+
+    const PAYMENT_STATUSES = [
+        'unpaid',
+        'pending',
+        'paid',
+        'failed',
+        'cancelled'
+    ];
+
+    const STATUSES = [
+        'Diproses',
+        'Menunggu Pembayaran',
+        'Dibayar',
+        'Gagal',
+        'Dibatalkan',
+        'Selesai'
+    ];
+
+    // Add this property to allow status updates without validation
+    protected $guarded = [];
 
     public function penyewa(): BelongsTo
     {
@@ -99,20 +122,24 @@ class Sewa extends Model
             );
         });
 
-        self::updating(function ($sewa) {
-            if (Carbon::parse($sewa->tanggal_mulai)->isBefore(Carbon::today())) {
-                throw new \Exception("Tanggal mulai tidak boleh lebih kecil dari hari ini.");
-            }
-            if (Carbon::parse($sewa->tanggal_selesai)->isBefore(Carbon::parse($sewa->tanggal_mulai))) {
-                throw new \Exception("Tanggal selesai tidak boleh lebih kecil dari tanggal mulai.");
-            }
+        static::updating(function ($sewa) {
+            // Only validate dates when not updating status
+            if ($sewa->isDirty('tanggal_mulai') || $sewa->isDirty('tanggal_selesai')) {
+                if (Carbon::parse($sewa->tanggal_mulai)->isBefore(Carbon::today())) {
+                    throw new \Exception("Tanggal mulai tidak boleh lebih kecil dari hari ini.");
+                }
+                if (Carbon::parse($sewa->tanggal_selesai)->isBefore(Carbon::parse($sewa->tanggal_mulai))) {
+                    throw new \Exception("Tanggal selesai tidak boleh lebih kecil dari tanggal mulai.");
+                }
 
-            self::validateBusAvailability(
-                $sewa->id_bus,
-                $sewa->tanggal_mulai,
-                $sewa->tanggal_selesai,
-                $sewa->id
-            );
+                self::validateBusAvailability(
+                    $sewa->id_bus,
+                    $sewa->tanggal_mulai,
+                    $sewa->tanggal_selesai,
+                    $sewa->id
+                );
+            }
+            return true;
         });
 
         // Validasi ketersediaan bus

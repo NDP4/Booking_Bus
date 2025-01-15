@@ -1,0 +1,15 @@
+.git
+.env
+.env.*
+node_modules
+vendor
+storage/framework/cache/**
+storage/framework/sessions/**
+storage/framework/views/**
+storage/logs/**
+*.log
+.idea
+.vscode
+docker
+tests
+README.md

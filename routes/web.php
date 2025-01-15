@@ -19,6 +19,7 @@ use Midtrans\Config as MidtransConfig;
 use Illuminate\Support\Facades\Hash;  // Add this at the top with other imports
 use Illuminate\Support\Facades\Storage;  // Add this at the top with other imports
 use App\Http\Controllers\PenilaianController; // Add this line
+use Carbon\Carbon;  // Add this import
 
 // Add Midtrans configuration
 MidtransConfig::$serverKey = env('MIDTRANS_SERVER_KEY');
@@ -448,9 +449,21 @@ Route::middleware(['auth'])->prefix('dashboard')->group(function () {
     Route::get('/history', function () {
         $sewas = Sewa::with(['bus', 'penilaian'])
             ->where('id_penyewa', Auth::id())
-            ->latest()
             ->get()
             ->map(function ($sewa) {
+                // Validate and update status before returning the data
+                $today = Carbon::now()->startOfDay();
+                $startDate = Carbon::parse($sewa->tanggal_mulai)->startOfDay();
+                $endDate = Carbon::parse($sewa->tanggal_selesai)->startOfDay();
+
+                if ($sewa->status !== 'Dibatalkan') {
+                    if ($today->between($startDate, $endDate)) {
+                        $sewa->update(['status' => 'Berlangsung']);
+                    } elseif ($today->isAfter($endDate)) {
+                        $sewa->update(['status' => 'Selesai']);
+                    }
+                }
+
                 return [
                     'id' => $sewa->id,
                     'bus_name' => $sewa->bus->nama_bus,
@@ -462,6 +475,7 @@ Route::middleware(['auth'])->prefix('dashboard')->group(function () {
                     'destination' => $sewa->tujuan,
                     'total_price' => $sewa->total_harga,
                     'status' => $sewa->status,
+                    'payment_status' => $sewa->payment_status, // Add this line
                     'created_at' => $sewa->created_at->format('d M Y H:i'),
                     'has_review' => $sewa->has_review,
                     'review' => $sewa->penilaian ? [
@@ -479,9 +493,73 @@ Route::middleware(['auth'])->prefix('dashboard')->group(function () {
 
     // Add this new route for reviews
     Route::post('/sewa/{sewa}/review', [PenilaianController::class, 'store'])->name('sewa.review');
+
+    // Add route for continuing payment
+    Route::get('/sewa/{id}/continue-payment', function ($id) {
+        try {
+            $sewa = Sewa::with('bus')->findOrFail($id);
+
+            // Check if payment is still needed
+            if ($sewa->payment_status !== 'unpaid') {
+                return redirect()->back()->with('error', 'Pembayaran sudah selesai');
+            }
+
+            // Check if snap token exists and not expired (24 hours)
+            if (
+                !$sewa->snap_token ||
+                Carbon::parse($sewa->updated_at)->diffInHours(now()) > 24
+            ) {
+
+                // Generate new snap token
+                $params = [
+                    'transaction_details' => [
+                        'order_id' => 'SEWA-' . $sewa->id . '-' . time(),
+                        'gross_amount' => (int) $sewa->total_harga,
+                    ],
+                    'customer_details' => [
+                        'first_name' => Auth::user()->name,
+                        'email' => Auth::user()->email,
+                    ],
+                    'item_details' => [
+                        [
+                            'id' => $sewa->id_bus,
+                            'price' => $sewa->bus->harga_sewa,
+                            'quantity' => $sewa->lama_sewa,
+                            'name' => $sewa->bus->nama_bus,
+                        ]
+                    ],
+                ];
+
+                $snapToken = \Midtrans\Snap::getSnapToken($params);
+                $sewa->update(['snap_token' => $snapToken]);
+            }
+
+            return inertia('Payment', [
+                'sewa' => $sewa,
+                'bus' => $sewa->bus,
+                'snapToken' => $sewa->snap_token,
+                'auth' => ['user' => Auth::user()], // Add auth data for navbar
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Payment continuation error:', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return back()->with('error', 'Gagal memuat halaman pembayaran');
+        }
+    })->name('sewa.continue-payment');
+
+    // ...existing code...
 });
 
 // Replace or add this route outside of any group
 Route::post('/sewa/{sewa}/review', [PenilaianController::class, 'store'])
     ->middleware(['auth'])
     ->name('sewa.review');
+
+Route::post('/sewa/{id}/payment-callback', [SewaController::class, 'paymentCallback'])->name('sewa.paymentCallback');
+
+// ...existing code...
+Route::get('/api/buses/{bus}/reviews', [PenilaianController::class, 'getReviews']);
+// ...existing code...

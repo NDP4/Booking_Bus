@@ -1,33 +1,29 @@
-import { defineConfig } from "vite";
-import laravel from "laravel-vite-plugin";
-import react from "@vitejs/plugin-react";
+import { defineConfig } from 'vite';
+import laravel from 'laravel-vite-plugin';
+import react from '@vitejs/plugin-react';
+import path from 'path';
 
 export default defineConfig({
     plugins: [
         laravel({
-            input: "resources/js/app.jsx",
+            input: ['resources/css/app.css', 'resources/js/app.jsx'],
             refresh: true,
         }),
         react(),
     ],
     resolve: {
         alias: {
-            "@": "/resources/js",
+            '@': path.resolve(__dirname, './resources/js'),
+            'Layouts': path.resolve(__dirname, './resources/js/Layouts'),
+            'Pages': path.resolve(__dirname, './resources/js/Pages')
         },
     },
     build: {
-        outDir: "public/build",
+        sourcemap: true,
+        chunkSizeWarningLimit: 1600,
+        outDir: 'public/build',
     },
-    define: {
-        "process.env.GOOGLE_MAPS_API_KEY": JSON.stringify(
-            process.env.GOOGLE_MAPS_API_KEY
-        ),
-    },
-    server: {
-        host: "0.0.0.0", // Ekspos ke semua IP
-        port: 5173, // Port default Vite
-        hmr: {
-            host: "192.168.46.131", // Ganti dengan IP lokal
-        },
+    optimizeDeps: {
+        include: ['react', 'react-dom'],
     },
 });
